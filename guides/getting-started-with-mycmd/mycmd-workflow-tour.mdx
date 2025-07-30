@@ -3,4 +3,253 @@ title: "The MyCmd Workflow Explained"
 description: "Understand the day-to-day flow of using MyCmd: discovering commands, using command groups, and leveraging the search path. This page explains the typical lifecycle of how users interact with MyCmd structure."
 ---
 
-*This page will automatically be generated from the codebase*
+# The MyCmd Workflow Explained
+
+## 1. Understanding Your Daily Interaction with MyCmd
+
+This guide unpacks the typical workflow users engage in with MyCmd. From discovering commands, navigating command groups, to leveraging the search path, you’ll learn how your inputs flow through MyCmd to execute scripts efficiently and at scale.
+
+### What You Will Learn Here
+- How MyCmd locates and runs commands
+- The role and structure of command groups
+- How the search path affects command discovery
+
+---
+
+## 2. Workflow Overview
+
+### Task Description
+Help users understand the step-by-step lifecycle of running commands with MyCmd, focusing on how to discover commands, understand command groups, and how the search path guides command resolution.
+
+### Prerequisites
+- MyCmd installed and accessible in your system PATH
+- Familiarity with basic shell usage
+- At least one command group and command available in your search path (custom or system provided)
+
+### Expected Outcome
+By the end of this workflow, you will confidently run MyCmd commands, explore command groups, and understand how MyCmd resolves and executes your requested commands.
+
+### Time Estimate
+5 to 10 minutes for initial experimentation and familiarization
+
+### Difficulty Level
+Beginner to Intermediate
+
+---
+
+## 3. The MyCmd User Flow: Step-by-Step
+
+### Step 1: Invoke MyCmd Launcher
+
+Open your terminal and start by running `mycmd` followed by optionally some command groups or a command. For example:
+
+```bash
+mycmd --help
+mycmd project
+mycmd project list-myproject-only
+```
+
+**Expected result:**
+- Help or version information if requested
+- A list of immediate child command groups or commands if provided only a command group
+- Execution output for the specified command
+
+
+### Step 2: Discovering Command Groups
+
+MyCmd organizes commands hierarchically. Top-level command groups like `project`, `shell`, or `logging` group related commands.
+
+- Use `mycmd <command_group> --help` to explore what commands or subgroups exist within.
+- For example, `mycmd project --help` lists all commands in the `project` group.
+
+**Why this matters:**
+- Helps you find the right commands for your needs
+- Exposes nested structure for better organization
+
+### Step 3: Understanding Command Hierarchy and Naming
+
+Commands are always run as:
+
+```bash
+mycmd <command_group>... <command> [arguments]
+```
+
+- Each level corresponds to a folder that holds scripts and a `-lib` support library.
+- Spaces separate the group hierarchy instead of slashes.
+
+Example:
+```bash
+mycmd project list-myproject-only
+```
+Here, `project` is a command group, and `list-myproject-only` is a command inside it.
+
+
+### Step 4: Leveraging the Search Path
+
+MyCmd uses the environment variable `MYCMD_SEARCH_PATH` which defines directories to search for command groups.
+
+- These directories can contain your personal commands or system commands.
+- This allows you to override or extend functionality by inserting directories earlier in the search path.
+
+To check your search path:
+```bash
+echo "$MYCMD_SEARCH_PATH"
+```
+
+**Example:**
+You might have something like:
+```
+/home/user/mycmd:/usr/local/share/mycmd
+```
+
+MyCmd searches these paths in order until it finds the command group or command.
+
+### Step 5: Running Commands and Receiving Output
+
+When you execute a command, `mycmd`:
+
+- Resolves the command group hierarchy via the search path
+- Loads the relevant shell libraries for the group
+- Executes the command script with your arguments
+
+Sample output:
+```
+➡️ Executing task 'list-myproject-only'...
+file1.txt
+myproject
+README.md
+✅ Task 'list-myproject-only' succeeded.
+```
+This confirms the command ran successfully and output what it is designed to.
+
+### Step 6: Using Help and Version Information
+
+Every command group and command supports these flags:
+
+- `-h` or `--help` to show usage and details
+- `-v` or `--version` to show the version of the command group or command
+
+Example:
+```bash
+mycmd project --help
+mycmd project list-myproject-only --help
+```
+
+
+### Step 7: Adjusting Your Environment for Workflow Efficiency
+
+- Customize `MYCMD_USER_BASE_DIR` and `MYCMD_SYSTEM_BASE_DIR` to control where commands live
+- Modify `MYCMD_SEARCH_PATH` to prioritize your command groups
+- Use this flexibility to tailor MyCmd for your team or personal workflow
+
+---
+
+## 4. Practical Example: Running a Project Command
+
+Let's say you want to see all registered project tasks:
+
+1. Check available commands in `project`:
+
+```bash
+mycmd project --help
+```
+
+2. List recognized project tasks:
+
+```bash
+mycmd project list-myproject-only
+```
+
+3. If you want to run a specific project task:
+
+```bash
+mycmd project run <task_name>
+```
+
+Replace `<task_name>` with the name of the registered task.
+
+---
+
+## 5. Best Practices & Tips
+
+- **Explore first:** Use `--help` on command groups to understand your available commands.
+- **Use the search path wisely:** Add your personal scripts early in the search path to override system commands.
+- **Keep scripts organized:** Structure your commands into nested command groups reflecting your project.
+- **Use verbose and debug flags:** Environment variables like `MYCMD_DEBUG` and `MYCMD_TRACE` help troubleshoot command executions.
+
+---
+
+## 6. Troubleshooting Common Issues
+
+### Command Not Found
+If executing a command results in an error:
+
+```bash
+mycmd: Command 'foo' not found
+```
+
+- Verify your `MYCMD_SEARCH_PATH` includes directories where 'foo' is defined.
+- Use `mycmd --help` and `mycmd <command_group> --help` to verify availability.
+- Confirm your command group’s directory structure and naming conventions.
+
+### Environment Variables Not Set
+Commands may require certain environment variables.
+
+- Check your environment configuration.
+- Review documentation on [Configuring MyCmd for Your Workflow](/getting-started/configuration-troubleshooting/configuring-mycmd).
+
+### Unexpected Output or Failures
+- Enable trace with `export MYCMD_TRACE=1` and rerun the command.
+- Check logs if `MYCMD_LOG_FILE` is set.
+- Inspect the command script or contact your team if it’s a shared command.
+
+---
+
+## 7. Diagram: MyCmd Command Execution Flow
+
+```mermaid
+flowchart TD
+    Start([Start: User types "mycmd <groups> <command>"])
+    SearchPathCheck["Check MYCMD_SEARCH_PATH environment variable"]
+    ResolveGroups["Resolve command groups in search path"]
+    LoadLibs["Load command-group shell libraries"]
+    ExecuteScript["Execute the final command script with arguments"]
+    ShowOutput["Display command output & status"]
+    HandleError["Handle errors and show messages"]
+
+    Start --> SearchPathCheck
+    SearchPathCheck --> ResolveGroups
+    ResolveGroups -->|Found| LoadLibs
+    ResolveGroups -->|Not found| HandleError
+    LoadLibs --> ExecuteScript
+    ExecuteScript -->|Success| ShowOutput
+    ExecuteScript -->|Error| HandleError
+
+    HandleError --> ShowOutput
+```
+
+---
+
+## 8. Next Steps & Related Documentation
+
+- [Running Your First Command](/getting-started/first-run-and-validation/first-command): Dive into running commands and understanding outputs.
+- [Configuring MyCmd for Your Workflow](/getting-started/configuration-troubleshooting/configuring-mycmd): Learn to customize environment variables and search paths.
+- [Writing Custom Commands and Command Groups](/guides/command-authoring-and-best-practices/writing-custom-commands): Extend your capabilities by authoring commands.
+- [Troubleshooting Installation and First Run](/getting-started/configuration-troubleshooting/troubleshooting-setup): Resolve common setup issues quickly.
+
+
+<Tip>
+Understanding the command group hierarchy and search path unlocks the full power of MyCmd — it enables you to structure commands logically and reuse functionality effectively.
+</Tip>
+
+<Check>
+Verify your environment by running `mycmd --help` and checking your search path with `echo "$MYCMD_SEARCH_PATH"`.
+</Check>
+
+<Warning>
+Avoid mixing directory naming conventions or placing command scripts outside of recognized search paths to prevent command resolution failures.
+</Warning>
+
+---
+
+Thank you for engaging with MyCmd. This workflow explanation prepares you to navigate and optimize your daily command script execution with clarity and confidence.
