@@ -3,4 +3,264 @@ title: "Configuring MyCmd for Your Workflow"
 description: "Explains options for user-specific configuration (e.g., where user-written commands and command groups should be placed), directory conventions, and how MyCmd discovers and loads scripts from search paths. Provides clarity on project and user directories."
 ---
 
-*This page will automatically be generated from the codebase*
+# Configuring MyCmd for Your Workflow
+
+MyCmd is designed to fit seamlessly into your workflow by allowing flexible, user-specific configuration of where your commands and command groups live, how MyCmd discovers them, and where it stores user-specific data such as configuration and cache files. This guide clarifies those directory conventions, environment variables, and search path behaviors that give you full control over your MyCmd setup.
+
+---
+
+## 1. Understanding MyCmd’s Directory Conventions
+
+MyCmd organizes commands into hierarchical command groups stored within base directories. Two primary base directories determine where MyCmd looks for commands:
+
+- **`MYCMD_SYSTEM_BASE_DIR`**: This is the system-wide base directory where MyCmd’s built-in command groups reside. It ensures the core commands are always available.
+- **`MYCMD_USER_BASE_DIR`**: This is your personal directory for user-defined command groups and commands. By default, this is `$HOME/mycmd` unless you override it.
+
+Both directories should already exist and contain your command scripts and groups. MyCmd will search both locations to discover commands.
+
+### Key Points
+
+- Commands are structured in hierarchical directories within these base directories.
+- Command groups can contain support shell libraries (e.g., a `-lib` suffix) for reusable functions.
+
+<Tip>
+The user base directory (`MYCMD_USER_BASE_DIR`) is your workspace for daily command creation and customization without affecting the system-wide commands.
+</Tip>
+
+---
+
+## 2. The MyCmd Search Path Explained
+
+MyCmd uses a **search path**, a list of directories it probes to find command groups and commands. The search path determines the order in which commands are discovered, impacting command overrides and extensions.
+
+### How the Search Path Is Built
+
+- It **always starts** with the system base directory `MYCMD_SYSTEM_BASE_DIR`.
+- It **ends** with the user base directory `MYCMD_USER_BASE_DIR`.
+- If you set the environment variable `MYCMD_SEARCH_PATH`:
+  - It should be a colon (`:`) separated list of directories.
+  - MyCmd converts each entry into an absolute path.
+  - Non-existent directories are discarded.
+  - Duplicates are removed to ensure uniqueness.
+- The final internal array `_MYCMD_SEARCH_PATH` reflects this ordered list.
+
+### Summary of the Search Order
+
+1. System base directory (highest priority)
+2. Zero or more custom paths specified in `MYCMD_SEARCH_PATH`
+3. User base directory (lowest priority)
+
+<Tip>
+Setting a custom `MYCMD_SEARCH_PATH` lets you extend or insert command groups between the system and user paths for advanced workflows.
+</Tip>
+
+---
+
+## 3. User Configuration and Cache Directories
+
+To keep your personalized configurations and caches organized, MyCmd creates and uses user-specific directories based on your operating system:
+
+| Purpose            | macOS Location                                       | Linux / Other Location                        |
+|--------------------|----------------------------------------------------|----------------------------------------------|
+| **Configuration**  | `$HOME/Library/Application Support/mycmd`          | `${XDG_CONFIG_HOME:-$HOME/.config}/mycmd`  |
+| **Cache**          | `$HOME/Library/Caches/mycmd`                         | `${XDG_CACHE_HOME:-$HOME/.cache}/mycmd`    |
+
+### How MyCmd Uses These Directories
+
+- Configuration files for commands are stored under these paths, organized by command group namespace.
+- Cache files (e.g., downloaded data, computed results) are stored here to optimize command performance.
+
+### Accessing Configuration and Cache Files
+
+Use these helper functions from your command or scripts:
+
+```bash
+config_file_path=$(mycmd.get_user_config_file "fully/qualified/command_name" "config.ini")
+cache_file_path=$(mycmd.get_user_cache_file "fully/qualified/command_name" "cache-file")
+```
+
+This automatically creates any missing directories and returns the full path you should read from or write to.
+
+<Warning>
+Never manually edit the files under these directories unless you are sure of the impact. Use commands or scripts to manage configuration to avoid corruption.
+</Warning>
+
+---
+
+## 4. Organizing Your Commands and Command Groups
+
+### Recommended Directory Structure
+
+Within your user base directory (`MYCMD_USER_BASE_DIR`), organize commands like this:
+
+```text
+$MYCMD_USER_BASE_DIR/
+└── command-group-name/
+    ├── command1          # Executable script file for command1
+    ├── command2          # Executable script file for command2
+    ├── command-group-sub/
+    │   ├── command3      # Nested command
+    │   └── command-group-sub-lib # Support library for this sub-group
+    └── command-group-name-lib    # Support library for this command group
+```
+
+- Each command is an executable script file.
+- Command groups are directories.
+- Support libraries are shell scripts with a `-lib` suffix to hold reusable functions.
+
+### Scope of Support Libraries
+
+- Command group libraries are loaded automatically when commands in that group run, providing shared functionality.
+- Support libraries should be stored alongside their command groups, named with the `-lib` suffix.
+
+<Tip>
+Keep your commands and support libraries organized logically to promote maintainability and encourage reuse.
+</Tip>
+
+---
+
+## 5. How MyCmd Discovers Commands
+
+When you invoke `mycmd`, it uses the following discovery flow:
+
+1. It consults the internal `_MYCMD_SEARCH_PATH` array for all base directories.
+2. Within each base directory, it recursively searches command groups and their commands.
+3. It loads support libraries for any command groups encountered.
+4. Commands found earlier in the search path have priority over those found later.
+
+This discovery ensures commands can be extended or overridden by user command groups if necessary.
+
+---
+
+## 6. Practical Steps to Customize Your Setup
+
+### Step 1: Verify or Set Your Base Directories
+
+```bash
+# See where system and user commands are
+echo "System base directory: $MYCMD_SYSTEM_BASE_DIR"
+echo "User base directory: $MYCMD_USER_BASE_DIR"
+
+# Set user base directory if you want to customize
+export MYCMD_USER_BASE_DIR="$HOME/custom_mycmd"
+mkdir -p "$MYCMD_USER_BASE_DIR"
+```
+
+### Step 2: Customize the Search Path
+
+```bash
+# Add a custom directory in the middle of the search path
+export MYCMD_SEARCH_PATH="$HOME/custom_mycmd:/opt/shared_mycmd"
+```
+
+### Step 3: Place Your Commands
+
+```bash
+mkdir -p "$MYCMD_USER_BASE_DIR/mytools"
+# Add your command script here
+# For example, a command "say-hello" inside "mytools"
+cat << 'EOF' > "$MYCMD_USER_BASE_DIR/mytools/say-hello"
+#!/usr/bin/env bash
+
+echo "Hello from MyCmd!"
+EOF
+chmod +x "$MYCMD_USER_BASE_DIR/mytools/say-hello"
+```
+
+### Step 4: Use Configuration and Cache Files
+
+```bash
+config_path=$(mycmd.get_user_config_file "mycmd/mytools/say-hello" "config.ini")
+echo "Config path: $config_path"
+
+cache_path=$(mycmd.get_user_cache_file "mycmd/mytools/say-hello" "cache.bin")
+echo "Cache path: $cache_path"
+```
+
+### Step 5: Verify and Run Your Command
+
+```bash
+# Run your new command
+mycmd mytools say-hello
+```
+
+---
+
+## 7. Troubleshooting Common Configuration Issues
+
+<AccordionGroup title="Troubleshooting MyCmd Configuration">
+<Accordion title="MYCMD_USER_BASE_DIR Not Set or Directory Missing">
+Ensure `MYCMD_USER_BASE_DIR` is defined and the directory exists:
+
+```bash
+echo "$MYCMD_USER_BASE_DIR"
+[[ -d "$MYCMD_USER_BASE_DIR" ]] || mkdir -p "$MYCMD_USER_BASE_DIR"
+```
+</Accordion>
+
+<Accordion title="Commands Not Found After Adding to User Directory">
+- Confirm your command script is executable (`chmod +x`).
+- Re-check the search path order; system directory comes first, user last.
+- Avoid duplicate directories in `MYCMD_SEARCH_PATH`.
+- Use absolute paths in `MYCMD_SEARCH_PATH`.
+- Restart your shell session after changes.
+</Accordion>
+
+<Accordion title="Configuration or Cache Files Not Created">
+- The helper functions `mycmd.get_user_config_file` and `mycmd.get_user_cache_file` create directories as needed when called.
+- Ensure your scripts call these before reading or writing.
+- Check permissions on your config/cache directories.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Additional Tips and Best Practices
+
+- Keep the system base directory unchanged to avoid breaking core commands.
+- Use descriptive names for your command groups and commands following lowercase and dash separators.
+- Regularly back up your user configuration and commands directory.
+- Use support libraries (`-lib` files) to avoid duplicating code between commands.
+- Use environment variables thoughtfully to override behavior or extend discovery.
+
+---
+
+## 9. Summary Diagram of MyCmd Configuration and Discovery
+
+```mermaid
+flowchart TD
+    A[Start MyCmd Launcher] --> B[Load _MYCMD_SEARCH_PATH]
+    B --> C[Search in MYCMD_SYSTEM_BASE_DIR]
+    B --> D{Any custom paths set in MYCMD_SEARCH_PATH?}
+    D -->|Yes| E[Search Custom Paths in order]
+    D -->|No| F[Skip custom paths]
+    E & F --> G[Search in MYCMD_USER_BASE_DIR]
+    G --> H[Discover Command Groups & Commands]
+    H --> I[Load Support Libraries (-lib) for Command Groups]
+    I --> J[Prepare Environment (Config/Cache dirs)]
+    J --> K[Run Requested Command]
+
+    classDef baseDir fill:#b0d4f1,stroke:#205081,stroke-width:2px,color:#102b44;
+    class B,C,E,F,G baseDir;
+
+    classDef decision fill:#f9d5d3,stroke:#c53030,stroke-width:2px;
+    class D decision;
+```
+
+---
+
+## 10. Where to Go From Here
+
+- After configuring MyCmd for your workflow, try running some commands as shown in [Running Your First Command](../first-run-and-validation/first-command).
+- Explore how to organize and write your own commands in [Writing Custom Commands and Command Groups](../../guides/command-authoring-and-best-practices/writing-custom-commands).
+- If you encounter issues, consult [Troubleshooting Installation and First Run](../configuration-troubleshooting/troubleshooting-setup).
+
+---
+
+## References
+
+- See the detailed conventions explained in [MyCmd Path documentation](../concepts/core-architecture/mycmd-search-path).
+- Learn more about environmental variable roles in [MyCmd Environment Support Library](../mycmd/mycmd-environment-lib).
+- Understand command structure from [Core Concepts & Terminology](../../overview/architecture-core-concepts/core-concepts-terminology).
+
+---
