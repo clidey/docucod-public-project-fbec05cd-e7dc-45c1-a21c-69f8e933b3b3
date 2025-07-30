@@ -3,4 +3,226 @@ title: "Extending Your Commands with Shell Libraries"
 description: "Practical techniques for loading and using both internal and vendored shell libraries to expand the functionality of your MyCmd commands. See how to organize dependencies and maintain compatibility."
 ---
 
-*This page will automatically be generated from the codebase*
+# Extending Your Commands with Shell Libraries
+
+Practical techniques for loading and using both internal and vendored shell libraries to expand the functionality of your MyCmd commands. See how to organize dependencies and maintain compatibility.
+
+---
+
+## 1. Introduction
+
+When creating commands using MyCmd, you often need to leverage shared functionality and third-party libraries to enhance your command’s capabilities. This page guides you through **loading internal MyCmd support libraries** and **vendored shell libraries**, ensuring your commands remain modular, maintainable, and compatible across different environments.
+
+Understanding how to efficiently extend your commands with libraries is essential for building robust automation workflows that maximize code reuse and simplify maintenance.
+
+---
+
+## 2. Workflow Overview
+
+- **Goal**: Learn how to load and utilize MyCmd internal support libraries and vendored shell libraries within your command scripts.
+- **Prerequisites**: Familiarity with MyCmd command structure and basic Bash scripting.
+- **Outcome**: Commands that seamlessly depend on and interact with shared libraries, improving modularity and reducing duplication.
+- **Estimated Time**: 10-20 minutes
+- **Skill Level**: Intermediate (Basic Bash knowledge plus MyCmd command handling)
+
+---
+
+## 3. Loading MyCmd Internal Support Libraries
+
+MyCmd provides a set of internal support libraries which offer foundational capabilities like output formatting, environment validation, event lifecycle management, platform-specific utilities, and more.
+
+### How to Load Internal Libraries
+
+Your command scripts or support libraries can load MyCmd internal support libraries using the standardized loading functions. For example:
+
+```bash
+mycmd.load_mycmd_lib_support_lib "output"
+mycmd.load_mycmd_lib_support_lib "environment"
+```
+
+Each call loads a specific internal support library script located within the MyCmd library directory.
+
+### Best Practices
+
+- **Load only what you need:** Include only the support libraries your command depends on.
+- **Load early:** Load support libraries at the start of your script or function to make their functionality immediately available.
+- **Check for errors:** If a library fails to load, your command should handle this gracefully or exit with a helpful message.
+
+### Example
+
+Suppose your command needs formatted output and platform detection:
+
+```bash
+if ! mycmd.load_mycmd_lib_support_lib "output"; then
+    echo "Failed to load output support library." >&2
+    exit 1
+fi
+
+if ! mycmd.load_mycmd_lib_support_lib "platform-support"; then
+    echo "Failed to load platform support library." >&2
+    exit 1
+fi
+
+# Now you can use functions like mycmd.trace, mycmd.error_output, and platform checks such as mycmd.is_mac_os
+```
+
+---
+
+## 4. Loading Vendored Shell Libraries
+
+Vendored libraries are third-party or external shell libraries bundled with MyCmd or separately maintained, such as `bashup.events` for event handling or `ansi` for terminal colors.
+
+### Loading Vendored Libraries
+
+Use the dedicated function:
+
+```bash
+if ! mycmd.load_vendor_library "library-name"; then
+    mycmd.error_output "Required vendored library 'library-name' missing."
+    exit 1
+fi
+```
+
+Here `library-name` corresponds to the directory or file under the `$MYCMD_VENDOR_DIR` where vendored libraries live.
+
+### Practical Example
+
+The MyCmd event base support library (`mycmd-event-base-lib`) internally uses:
+
+```bash
+if ! mycmd.load_vendor_library "bashup.events"; then
+    mycmd.err_exit 1 "Required vendor library 'bashup.events' missing."
+fi
+
+function mycmd.event() {
+    event "${@}"
+}
+```
+
+This pattern ensures that commands relying on event support can safely assume the underlying library is loaded or exit early if not.
+
+### Recommendations
+
+- Always check the vendored library load success.
+- Offer a clear error message and exit early to prevent obscure runtime errors.
+- Know your vendored library dependencies before attempting to load.
+
+---
+
+## 5. Organizing Your Command Dependencies
+
+Managing dependencies is key to maintainable commands.
+
+### Internal vs. Vendored Libraries
+
+- **Internal libraries**: Core to MyCmd, in the `mycmd-*.sh` library files, and guaranteed to exist if MyCmd is installed correctly.
+- **Vendored libraries**: External code that may need separate version management or installation; treat them as optional dependencies.
+
+### Suggested Structure
+
+```bash
+# Load internal support libraries
+mycmd.load_mycmd_lib_support_lib "output"
+mycmd.load_mycmd_lib_support_lib "environment"
+
+# Load vendored libraries
+mycmd.load_vendor_library "bashup.events" || mycmd.err_exit 1 "Missing bashup.events vendored library."
+```
+
+### Tips
+
+- Use `mycmd.load_mycmd_lib_support_lib` for all official MyCmd internal support libraries.
+- Use `mycmd.load_vendor_library` for any vendored or third-party library dependencies.
+- When possible, isolate vendored library loading in a dedicated support library for your command group.
+
+---
+
+## 6. Example: Using Shell Libraries in a MyCmd Command
+
+Below is a simplified sketch of a MyCmd command script loading internal and vendored libraries:
+
+```bash
+#!/usr/bin/env bash
+
+# Load required internal libraries
+mycmd.load_mycmd_lib_support_lib "output"
+mycmd.load_mycmd_lib_support_lib "environment"
+
+# Load vendored event library
+if ! mycmd.load_vendor_library "bashup.events"; then
+    mycmd.err_exit 1 "Required vendored library 'bashup.events' is missing."
+fi
+
+# Use loaded library functionality
+function mycmd.main() {
+    mycmd.trace "Starting command execution."
+
+    # Raise an event using bashup.events
+    mycmd.event "command.started" "my-command"
+
+    # Your command logic here
+
+    mycmd.trace "Command execution complete."
+}
+```
+
+With this setup, your command can:
+
+- Use internal MyCmd features for consistent output and environment checks.
+- Utilize vendored libraries to implement advanced event lifecycle behaviors or other capabilities.
+
+---
+
+## 7. Troubleshooting Common Issues
+
+<AccordionGroup title="Common Problems When Loading Libraries">
+<Accordion title="Vendored Library Not Found">
+If a vendored library fails to load, verify:
+
+- The `MYCMD_VENDOR_DIR` environment variable is correctly set and points to the vendored libraries location.
+- The vendored library exists inside `MYCMD_VENDOR_DIR`.
+- Proper permissions are set to read these files.
+</Accordion>
+<Accordion title="Internal Library Load Fails">
+This is usually caused by incomplete or corrupted MyCmd installations.
+
+- Confirm `MYCMD_SYSTEM_BASE_DIR` and `MYCMD_USER_BASE_DIR` point to valid directories.
+- Reinstall or re-clone MyCmd to ensure all internal libraries are present.
+</Accordion>
+<Accordion title="Undefined Functions After Loading">
+If you get errors that functions (e.g., `mycmd.event`) are undefined:
+
+- Confirm the library loading function was called and succeeded.
+- Use `mycmd.trace` statements to debug the loading sequence.
+- Ensure no early script exits before the libraries load.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Best Practices and Tips
+
+- **Isolate library loading:** Create support library scripts for your commands that handle loading dependencies, simplifying your command scripts.
+- **Protect against redefinition:** MyCmd ensures functions are read-only once loaded, preventing accidental overwrites.
+- **Handle errors proactively:** Always detect and respond to library loading failures immediately.
+- **Leverage vendor libraries only when needed:** Avoid unnecessary dependencies for faster load times and simplified setups.
+- **Use consistent naming conventions:** Match vendored library names exactly to those in `MYCMD_VENDOR_DIR`.
+
+---
+
+## 9. Related Resources and Next Steps
+
+- [Writing Custom Commands and Command Groups](https://docs.mycmd.io/guides/command-authoring-and-best-practices/writing-custom-commands) — for detailed command creation patterns.
+- [Vendoring and Extending Libraries](https://docs.mycmd.io/mycmd-concepts/internals-and-extensibility/vendoring-and-extending) — for an overview of vendored libraries and extension strategies.
+- [Debugging and Logging in Your Commands](https://docs.mycmd.io/guides/command-authoring-and-best-practices/debugging-commands) — to improve troubleshooting your commands.
+- [System Architecture with Diagram](https://docs.mycmd.io/overview/architecture-core-concepts/architecture-system-diagram) — for a high-level view on how MyCmd organizes commands and libraries.
+
+---
+
+With this knowledge, you can confidently extend your MyCmd commands using well-organized internal and vendored shell libraries to build powerful, maintainable automation.
+
+---
+
+*This page is part of the "Extending Your Commands with Shell Libraries" guide in the MyCmd advanced workflows series.*
+
+---
