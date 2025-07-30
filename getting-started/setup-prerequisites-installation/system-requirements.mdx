@@ -3,4 +3,199 @@ title: "System Requirements"
 description: "Outlines the operating systems, Bash version, and required GNU utilities (coreutils, findutils, sed, and grep) that must be present for MyCmd to work reliably. Includes guidance for Mac users on acquiring dependencies via Homebrew. Ensures users validate their environment before proceeding to installation."
 ---
 
-*This page will automatically be generated from the codebase*
+# System Requirements
+
+This page outlines the essential system environment and dependencies that must be present for MyCmd to operate reliably. Before installing or running MyCmd, verify that your system meets these requirements to ensure smooth setup and usage.
+
+---
+
+## 1. Supported Operating Systems
+
+MyCmd is designed to work consistently on the following operating systems:
+
+- **Linux distributions** (various flavors)
+- **macOS (Darwin)**
+
+MyCmd detects your operating system at runtime and adjusts for platform-specific variations.
+
+<Info>
+macOS users must pay special attention to GNU utility dependencies, as macOS ships with BSD variants that differ from GNU tools.
+</Info>
+
+---
+
+## 2. Required Bash Version
+
+MyCmd requires **Bash** with the following characteristics:
+
+- Bash shell environment capable of executing scripts with `set -o nounset -o errexit -o errtrace -o pipefail`
+- Familiarity with Bash 4.x+ features is implied since associative arrays and advanced shell options are used internally.
+
+Ensure your Bash version supports these features for predictable behavior.
+
+---
+
+## 3. Essential GNU Utilities
+
+MyCmd relies on several standard GNU utilities that must be available in your environment with GNU-compatible behavior:
+
+| Utility  | Purpose                                  |
+|----------|------------------------------------------|
+| `coreutils` (`realpath`, `stat`, `wc`) | File and text processing utilities that provide standard behaviors and options.
+| `findutils` (`find`)       | Used to search for files within the file system.
+| `sed`                     | Stream editor for text transformations.
+| `grep`                    | Pattern matching and searching within files.
+
+<Note>
+These utilities must be the **GNU** versions, as MyCmd depends on GNU-specific behaviors and command-line options.
+</Note>
+
+### Checking Utility Versions
+Run the following commands in your terminal to verify availability:
+
+```bash
+bash --version
+sed --version
+find --version
+grep --version
+realpath --version
+```
+
+If any command is missing or returns a non-GNU version, you need to install or update the utility.
+
+---
+
+## 4. macOS Users: Acquiring Dependencies via Homebrew
+
+Since macOS ships with BSD utilities by default, you must install GNU versions via [Homebrew](https://brew.sh/):
+
+1. **Install Homebrew** (if not already installed):
+
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+2. **Install GNU Utilities:**
+
+   ```bash
+   brew install coreutils findutils gnu-sed ggrep gawk
+   ```
+
+3. **Verify installation:**
+
+   - GNU utilities installed by Homebrew are usually prefixed with a `g` (e.g., `gsed` for GNU sed).
+   - MyCmd automatically detects and uses these prefixed binaries where necessary.
+
+<Warning>
+Do not alias BSD commands to GNU commands globally as it can cause unexpected behavior in other tools.
+</Warning>
+
+---
+
+## 5. Environment Validation Before Installation
+
+Before proceeding with installation, validate your environment with these steps:
+
+<Steps>
+<Step title="Check Operating System">
+Run:
+
+```bash
+uname -s
+```
+
+Expected output should be `Linux` or `Darwin`.
+</Step>
+<Step title="Verify Bash version">
+Run:
+
+```bash
+bash --version
+```
+
+Ensure your Bash supports features used by MyCmd (typically version 4 or above).
+</Step>
+<Step title="Confirm GNU utilities availability">
+Run:
+
+```bash
+sed --version
+find --version
+grep --version
+```
+
+Verify editions are GNU, not BSD.
+</Step>
+<Step title="For macOS users, check Homebrew utility installation">
+Check presence of GNU prefixed commands:
+
+```bash
+gsed --version
+gfind --version
+ggrep --version
+```
+</Step>
+</Steps>
+
+<Tip>
+If any utility is missing or incorrect, install it via your package manager (e.g., `apt` for Linux or `brew` for macOS).
+</Tip>
+
+---
+
+## 6. Summary of System Variables and Directories
+
+MyCmd expects certain environment variables and directories to be present to manage configuration and cache properly. These include:
+
+- `MYCMD_SYSTEM_BASE_DIR`: Must point to a valid MyCmd system directory.
+- `MYCMD_USER_BASE_DIR`: Must point to a valid user base directory for MyCmd files.
+- `MYCMD_VENDOR_DIR`: Vendor directory path required for dependency management.
+
+You will be prompted during installation or setup to set or verify these variables.
+
+---
+
+## 7. Troubleshooting Common Environment Issues
+
+<AccordionGroup title="Common Environment Issues and Fixes">
+<Accordion title="Command Not Found Errors for GNU Utilities">
+
+- **Issue:** Utility commands like `sed` or `grep` are not found or are non-GNU versions.
+- **Fix:** Install corresponding GNU utilities via your OS package manager or Homebrew on macOS.
+</Accordion>
+<Accordion title="Bash Version Too Old or Unsupported">
+
+- **Issue:** Bash version is below 4.x or missing features.
+- **Fix:** Upgrade Bash to the latest version compatible with your system.
+</Accordion>
+<Accordion title="Environment Variables Not Set or Directories Missing">
+
+- **Issue:** Setup scripts report missing `MYCMD_SYSTEM_BASE_DIR`, `MYCMD_USER_BASE_DIR`, or others.
+- **Fix:** Define these environment variables pointing to valid directories before running MyCmd installation.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Next Steps
+
+Once you have verified your system meets these requirements, proceed to the [Installing MyCmd](/getting-started/setup-prerequisites-installation/installing-mycmd) page for installation instructions.
+
+If you encounter issues with your environment setup or system requirements, consult the [Troubleshooting Installation and First Run](/getting-started/configuration-troubleshooting/troubleshooting-setup) guide.
+
+---
+
+## References
+
+- [MyCmd Overview: Typical Workflow](../overview/architecture-core-concepts/workflow-overview)
+- [MyCmd Platform Support and Portability](../../mycmd-concepts/internals-and-extensibility/platform-support)
+
+---
+
+<Check>
+Make sure your system meets all requirements before continuing to installation to avoid interrupting your setup with environment errors.
+</Check>
+
+---
+
+*This concludes the System Requirements for MyCmd.*
