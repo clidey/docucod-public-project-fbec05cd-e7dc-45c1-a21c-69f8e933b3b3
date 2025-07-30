@@ -3,4 +3,113 @@ title: "Product Introduction"
 description: "An introduction to MyCmd as a script execution launcher, explaining its core value proposition: providing structure, hierarchy, and code reuse for command scripts via a command directory system. Outlines how it accelerates scripting workflows."
 ---
 
-*This page will automatically be generated from the codebase*
+# Product Introduction
+
+## Why Choose MyCmd?
+
+Scripting in Bash can quickly become complex, disorganized, and difficult to maintain, especially as your projects grow. MyCmd transforms your scripting workflow by introducing a clear structure, hierarchy, and effortless code reuse for your command scripts. Imagine having a directory system that not only organizes scripts intuitively but also enables you to build robust command frameworks that scale.
+
+- **Accelerated Workflow:** Quickly access and execute commands through a well-organized hierarchy.
+- **Reusable Code:** Share common functions and settings across related commands via command groups.
+- **Discoverability:** Easily find and understand available commands and their purpose.
+- **Extensibility:** Integrate support libraries that extend functionality within command groups.
+- **Traceability:** Access versioning and help information consistently.
+
+This page is designed for developers and sysadmins who want to streamline their Bash scripting with a powerful launcher and management system.
+
+---
+
+## What Is MyCmd?
+
+MyCmd is a Bash command execution launcher designed to manage scripts with order and clarity. At its core, MyCmd addresses the challenges of unstructured script collections by organizing commands into a hierarchical directory structure known as "command groups." Each command group represents a logical unit of scripts with shared code and metadata.
+
+### The Core of MyCmd:
+
+- **Command Groups:** Directories that contain related commands and other command groups, encapsulating shared code through common shell libraries.
+- **Commands:** Individual executable scripts within command groups, accessible through a structured command syntax.
+- **Registry:** An internal index that tracks all discovered command groups and commands, enabling fast lookup and execution.
+
+By creating this layered structure, MyCmd empowers you to maintain scalable, modular scripts that grow alongside your projects.
+
+---
+
+## Key Features & Capabilities
+
+### 1. Hierarchical Command Organization
+Commands and command groups are arranged hierarchically in directories, enabling intuitive navigation and execution. This hierarchy allows you to inherit shared functionality in higher-level groups and reduce duplication.
+
+### 2. Metadata Registration and Discovery
+MyCmd automatically discovers command groups and commands using a global registry system. This registry stores metadata such as names, versions, descriptions, and help text, streamlining command discovery and usage assistance.
+
+### 3. Support Libraries for Shared Functionality
+Each command group can define support libraries—shell scripts suffixed with `-lib`—that automatically load, providing common functions and utilities for commands within the group.
+
+### 4. Simplified Command Execution Flow
+From the command line, users invoke MyCmd followed by command groups and commands reflecting the directory paths, abstracting complexity and accelerating execution.
+
+### Example Scenario: Running a Project Task
+Suppose you have tasks grouped in `mycmd/project/`, each task implemented as a command script. You can run `mycmd project build` to execute the build process, leveraging shared project libraries and configurations.
+
+---
+
+## Why Should You Care?
+
+### Streamline Complex Bash Workflows
+MyCmd helps you break down complex scripts into manageable, reusable components, cutting down on maintenance time.
+
+### Increase Productivity and Consistency
+By standardizing how scripts are structured and accessed, MyCmd prevents fragmentation and promotes consistency across your scripting projects.
+
+### Easy to Adopt and Extend
+The directory conventions and naming explicitly tie scripts into the framework, allowing quick onboarding and collaborative development.
+
+---
+
+## Getting Started Preview
+
+### Quick Start
+Getting started involves setting up your environment variables `MYCMD_SYSTEM_BASE_DIR`, `MYCMD_USER_BASE_DIR`, and optionally customizing `MYCMD_SEARCH_PATH` to point to your command directories. Once set, running the `mycmd` command lets you explore available command groups and commands.
+
+### Prerequisites
+- Basic knowledge of Bash scripting.
+- Existing Bash scripts or commands structured in directories following MyCmd conventions.
+- Environment variables configured to point MyCmd to your scripts.
+
+### Next Steps
+Explore the [Target Audience & Use Cases](/overview/product-introduction-value/target-audience-use-cases) page to understand how MyCmd fits your needs, then dive into the [Feature Summary](/overview/product-introduction-value/feature-overview) for a detailed feature set. Once ready, visit [System Requirements](/getting-started/setup-prerequisites-installation/system-requirements) to set up your environment.
+
+---
+
+## Additional Insights from MyCmd
+
+- The **MyCmd Registry** underlies command discovery, mapping every script and group to metadata for seamless access.
+- Support for environment validation, formatted output, and extensible shell libraries ensures your commands run reliably across setups.
+- The hierarchical naming scheme allows deeply nested commands with inherited properties for organized script ecosystems.
+
+---
+
+Embrace MyCmd to bring order, scalability, and efficiency to your Bash command scripting.
+
+---
+
+<AccordionGroup title="Frequently Asked Questions">
+<Accordion title="What is a Command Group?">
+A command group is a directory of related commands and subgroups that share common code and metadata, providing organization and code reuse.
+</Accordion>
+<Accordion title="How do commands inherit from command groups?">
+Commands within a command group automatically gain access to the group's shared libraries and configurations, avoiding code duplication.
+</Accordion>
+<Accordion title="How do I add a new command?">
+Create an executable script inside the appropriate command group directory and follow the naming conventions. MyCmd will automatically discover and add it to the registry.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Reference Links
+- [MyCmd Registry Overview](mycmd/mycmd-registry-lib)
+- [Command Group Support Library](mycmd/mycmd-command-group-lib)
+- [Project Command Group Library](mycmd/project/project-lib)
+- [Environment Setup](mycmd/mycmd-environment-lib)
+
+<Source url="https://github.com/travisbhartwell/mycmd" branch="main" paths={[{"path": "mycmd/mycmd-registry-lib", "range": "1-244"},{"path": "mycmd/mycmd-command-group-lib", "range": "1-181"}]} />
