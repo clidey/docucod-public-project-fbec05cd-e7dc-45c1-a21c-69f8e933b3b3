@@ -3,4 +3,168 @@ title: "Launcher and Execution Flow"
 description: "Follow the high-level flow of how the `mycmd` launcher sets up the execution environment, locates the correct command or group, initializes dependencies, and orchestrates command execution, ensuring that each invocation is both isolated and extensible."
 ---
 
-*This page will automatically be generated from the codebase*
+# Launcher and Execution Flow
+
+The `mycmd` launcher is the core entry point that orchestrates the execution of commands within the MyCmd framework. Understanding its high-level execution flow empowers you to grasp how your commands are discovered, loaded, and executed in a controlled, extensible environment that ensures isolation and consistent behavior.
+
+---
+
+## Understanding the MyCmd Launcher
+
+At its core, `mycmd` acts as an intelligent dispatcher and environment setup utility. Rather than executing command scripts directly, it performs several preparatory steps to ensure the correct command is located, initialized with its dependencies, and run in isolation with all necessary context.
+
+From a user's perspective, invoking a command like:
+
+```shell
+mycmd project build
+```
+
+triggers a hierarchical search for the `project` command group and its `build` command. The launcher sets up the environment, loads shared command group libraries, and finally runs the command's main function.
+
+### Key Goals of the Launcher
+
+- **Command Discovery:** Finds the exact command or command group matching the user input.
+- **Environment Initialization:** Sets environment variables and shell options needed for predictable execution.
+- **Dependency Loading:** Sources any shared libraries associated with the command group hierarchy.
+- **Execution Isolation:** Runs the command script in a way that protects the global environment and manages input arguments.
+- **Extensibility:** Supports hooks and lifecycle events for customization and deferred actions.
+
+---
+
+## Execution Flow Overview
+
+The following steps outline the typical lifecycle when `mycmd` runs a command:
+
+<Steps>
+<Step title="Parsing and Validating Input">
+The launcher parses the command line input, interpreting space-separated tokens as a command group hierarchy and a command. It validates that the user-requested command exists in the registered command groups and commands.
+</Step>
+<Step title="Building the Fully Qualified Name">
+MyCmd converts the input tokens into a fully qualified name, representing the hierarchical path (e.g., `mycmd/project/build`). This structured identifier is key to locating and loading the correct command.
+</Step>
+<Step title="Command Resolution via Search Path">
+Using the configured `MYCMD_SEARCH_PATH` and base directories (`MYCMD_SYSTEM_BASE_DIR`, `MYCMD_USER_BASE_DIR`), the launcher scans for matching command group directories and scripts. This adheres strictly to the hierarchical filesystem conventions.
+</Step>
+<Step title="Loading Command Groups and Support Libraries">
+To support code reuse and shared functionality, the launcher recursively loads shell libraries of all parent command groups. This ensures the command inherits any common functions or variables.
+</Step>
+<Step title="Loading and Preparing the Command">
+The command script itself is sourced, and any command-specific metadata is registered. The launcher verifies the existence of the mandatory `mycmd.main` function that serves as the command's entry point.
+</Step>
+<Step title="Configuring Shell Environment">
+Depending on environment variables such as `MYCMD_SHELL_TRACE` and `MYCMD_SHELL_VERBOSE`, the launcher configures Bash options (`set -x`, `set -v`) to enable detailed command execution tracing or verbosity.
+</Step>
+<Step title="Setting Execution Context Environment Variables">
+Important environment variables like `_MYCMD_FULLY_QUALIFIED_NAME` and `_MYCMD_NAMESPACED_PARTS_STRING` are set to provide the runtime context inside the command execution.
+</Step>
+<Step title="Executing the Command">
+The launcher calls the command's `mycmd.main` function, passing along any arguments supplied by the user. This is the main execution phase where the command performs its logic.
+</Step>
+<Step title="Exit and Cleanup">
+After execution, the launcher handles return codes, performs any deferred lifecycle events (such as cleanup), and exits with the appropriate code reflecting the outcome.
+</Step>
+</Steps>
+
+---
+
+## Real-World User Flow Example
+
+Imagine you're a developer automating your project build process:
+
+1. You type: `mycmd project build`.
+2. The launcher interprets this as:
+   - Command group: `project`
+   - Command: `build`
+3. It searches the directories in your search path for the `project` command group.
+4. Loads the `project-lib` shell library, which has shared functions for project tasks.
+5. Sources the `build` command script under the `project` directory.
+6. Checks that the `build` command's `mycmd.main` function exists.
+7. Sets environment options, such as verbose logging if enabled.
+8. Calls `mycmd.main` in the build command script, passing any extra arguments.
+9. Once the build completes (success or failure), the launcher cleans up and returns the control.
+
+This flow ensures a predictable, extensible, and isolated execution environment for your commands.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Keep your commands focused:** Each command script should implement `mycmd.main` responsibly and avoid cluttering the global state.
+- **Leverage command groups:** Organize related commands into groups and use shared `-lib` libraries for reusable code.
+- **Use environment variables for customization:** Variables like `MYCMD_SHELL_TRACE` let you debug the launcher and command executions when needed.
+- **Check for return codes:** Properly handle exit codes in your command main functions so the launcher reflects execution status accurately.
+- **Employ lifecycle events:** Use deferred startup and exit hooks if you need to extend command behavior or resource management without modifying the launcher.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Launcher Execution Troubleshooting">
+<Accordion title="Command Not Found Error">
+If you encounter an error stating the command or command group was not found:
+- Verify your `MYCMD_SEARCH_PATH` is set correctly and includes paths where your commands are installed.
+- Make sure the command group and command scripts follow the expected directory and naming conventions.
+- Use `mycmd -h` or `mycmd <command_group> -h` to list available commands.
+</Accordion>
+<Accordion title="Missing 'mycmd.main' Function">
+If the launcher reports that `mycmd.main` is missing:
+- Confirm the command script defines a function named `mycmd.main`.
+- Check if the command script is properly sourced; syntax errors may prevent loading.
+- Ensure your shell environment allows function definitions without restrictions or errors.
+</Accordion>
+<Accordion title="Unexpected Shell Behavior (Verbose or Trace Output)">
+If the command output is unexpectedly verbose or trace output is enabled:
+- Check if `MYCMD_SHELL_TRACE` or `MYCMD_SHELL_VERBOSE` environment variables are set.
+- These enable Bash's `set -x` and `set -v` options for debugging.
+- Unset them for normal operation.
+</Accordion>
+<Accordion title="Environment Variables Missing During Execution">
+Commands rely on context environment variables like `_MYCMD_FULLY_QUALIFIED_NAME`. If they are unset:
+- Verify that the launcher is correctly exporting these variables before executing the command.
+- Confirm you are using the official `mycmd` launcher and not invoking command scripts directly.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Diagram: Simplified Launcher Execution Flow
+
+```mermaid
+flowchart TD
+
+  Start([User runs 'mycmd' with args]) --> ParseInput[Parse command group and command tokens]
+  ParseInput --> BuildFQN[Construct Fully Qualified Name]
+  BuildFQN --> ResolveCmd[Resolve Command and Command Group via MYCMD_SEARCH_PATH]
+  ResolveCmd --> LoadCGroups[Load Command Group Libraries Recursively]
+  LoadCGroups --> LoadCmd[Sourcing Command Script]
+  LoadCmd --> CheckMain[Check for 'mycmd.main' Function]
+  CheckMain --> ConfigureShell[Configure Shell Environment (Tracing, Verbosity)]
+  ConfigureShell --> SetEnv[Set Exec Context Env Variables]
+  SetEnv --> ExecuteCmd[Execute Command: Call 'mycmd.main']
+  ExecuteCmd --> HandleExit[Handle Return Code and Cleanup]
+  HandleExit --> End([Exit with status])
+
+  %% Styling decision nodes for clarity
+  classDef decision fill:#f96,stroke:#333,stroke-width:2px;
+  class CheckMain decision;
+```
+
+---
+
+## Related Documentation
+
+- [Command and Command Group Hierarchy](/mycmd-concepts/core-architecture/command-hierarchy): Learn how commands and groups are organized.
+- [MyCmd Search Path](/mycmd-concepts/core-architecture/mycmd-search-path): Understand how commands are located using search paths.
+- [Lifecycle Events and Deferred Actions](/mycmd-concepts/internals-and-extensibility/event-lifecycle): Explore how extensibility and deferred execution work in MyCmd.
+- [Writing Custom Commands and Command Groups](guides/command-authoring-and-best-practices/writing-custom-commands): Deep dive into authoring commands executed by the launcher.
+- [Typical Workflow Overview](/overview/architecture-core-concepts/workflow-overview): See a user-centered walkthrough of MyCmd usage.
+
+---
+
+## Summary
+
+The `mycmd` launcher provides a robust, extensible mechanism for discovering and executing Bash commands organized into hierarchical groups. By carefully managing environment setup, loading shared code, and enforcing a command entry function contract, the launcher guarantees consistent and predictable behavior across all commands.
+
+Fully grasping this execution flow is essential for both using MyCmd effectively and authoring reliable commands that integrate seamlessly into your scripting and automation workflows.
+
+---
