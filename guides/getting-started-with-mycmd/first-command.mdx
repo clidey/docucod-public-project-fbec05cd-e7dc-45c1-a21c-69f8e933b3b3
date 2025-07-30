@@ -3,4 +3,210 @@ title: "Your First Command: Creating and Running"
 description: "A practical walkthrough of writing your first command and command group with MyCmd, from file organization to using the launcher to execute your scripts. Learn by doing, and see immediate results from your own commands."
 ---
 
-*This page will automatically be generated from the codebase*
+# Your First Command: Creating and Running
+
+Welcome to MyCmd! This guide takes you through a practical, hands-on journey to create your very first command and command group. You will learn how to organize your command files, write a simple command script, and use the MyCmd launcher to run your scripts and see immediate results.
+
+---
+
+## 1. Workflow Overview
+
+### What You'll Accomplish
+By following this guide, you will:
+- Understand how to structure your command files and directories
+- Write your first executable command script with metadata
+- Group commands logically into command groups for reuse and clarity
+- Run your commands using the `mycmd` launcher
+- Observe output and confirm your scripts are working as expected
+
+### Prerequisites
+- A working MyCmd installation and environment (see [Installing MyCmd](../../guides/getting-started-with-mycmd/installing-mycmd) for setup)
+- PATH configured to include `mycmd` binary
+- Basic familiarity with Bash scripting
+
+### Expected Outcome
+By the end, you will have:
+- A basic command group directory
+- A working command script with metadata
+- Successfully executed your first MyCmd command via the launcher
+
+### Time Estimate
+~15 minutes
+
+### Difficulty Level
+Beginner
+
+---
+
+## 2. Step-by-Step Instructions
+
+<Steps>
+<Step title="Create a Command Group Directory">
+
+1. Choose your base directory for MyCmd commands (usually in `~/mycmd/` or as defined by your `MYCMD_USER_BASE_DIR`).
+2. Create a new directory named after your command group. For example, `myfirstgroup`:
+
+```shell
+mkdir -p ~/mycmd/myfirstgroup
+```
+
+3. Within this directory, create your command group library file, named `<command-group>-lib` (e.g., `myfirstgroup-lib`):
+
+```shell
+cd ~/mycmd/myfirstgroup
+touch myfirstgroup-lib
+chmod +x myfirstgroup-lib
+```
+
+4. This library file will hold common functions or shared code for commands in this group. For now, you can leave it empty or add a short comment.
+
+**Result:** You have a command group directory and support library file ready.
+
+</Step>
+
+<Step title="Write Your First Command">
+
+1. Inside your command group directory, create a new executable script that will serve as your command. For example, `hello-world`:
+
+```shell
+touch hello-world
+chmod +x hello-world
+```
+
+2. Open `hello-world` in your editor and add the following minimal command script skeleton:
+
+```bash
+#!/usr/bin/env -S mycmd
+
+mycmd:command.register_version "0.1"
+mycmd:command.register_short_description "Prints a friendly greeting."
+
+[[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+function mycmd.main() {
+    mycmd.output "Hello, MyCmd world!"
+}
+```
+
+3. Save the file.
+
+**Explanation:**
+- The `#!/usr/bin/env -S mycmd` shebang invokes your command via the MyCmd launcher.
+- Registration calls add metadata for help and version support.
+- The `mycmd.main` function runs when you execute the command.
+
+**Result:** Your first command is written and ready to run.
+
+</Step>
+
+<Step title="Run Your Command Using the Launcher">
+
+1. Run the MyCmd launcher with your command group and command name:
+
+```shell
+mycmd myfirstgroup hello-world
+```
+
+2. You should see the output:
+
+```
+Hello, MyCmd world!
+```
+
+3. To check the help or version:
+
+```shell
+mycmd myfirstgroup hello-world --help
+mycmd myfirstgroup hello-world --version
+```
+
+4. Verify the outputs include your registered description and version.
+
+**Result:** You successfully invoked your new command through MyCmd.
+
+</Step>
+
+<Step title="Add More Commands to Your Group (Optional)">
+
+1. Repeat the previous step to add additional commands in the `myfirstgroup` directory.
+2. Each script should:
+   - Include command metadata registration
+   - Define `mycmd.main` with the command logic
+3. Running `mycmd myfirstgroup` will list available commands with descriptions.
+
+**Result:** Your command group now organizes multiple related commands.
+
+</Step>
+</Steps>
+
+---
+
+## 3. Examples & Code Samples
+
+### Example: Minimal `hello-world` Command Script
+
+```bash
+#!/usr/bin/env -S mycmd
+
+mycmd:command.register_version "0.1"
+mycmd:command.register_short_description "Prints a friendly greeting."
+
+[[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+function mycmd.main() {
+    mycmd.output "Hello, MyCmd world!"
+}
+```
+
+### Directory Structure Example
+
+```text
+~/mycmd/
+└── myfirstgroup/
+    ├── myfirstgroup-lib       # Command group support library
+    └── hello-world            # Your first command script
+```
+
+---
+
+## 4. Troubleshooting & Tips
+
+### Common Issues
+
+- **No output or error running `mycmd`**
+  - Verify `mycmd` is installed and on your PATH.
+  - Confirm your command scripts are executable (`chmod +x`).
+
+- **Help and version show no metadata**
+  - Ensure your command has the `mycmd:command.register_short_description` and `mycmd:command.register_version` calls.
+  - Confirm metadata lines are outside the `mycmd.main` function.
+
+- **Command not found error**
+  - Check that your command directory and script are placed inside one of the directories listed in your `MYCMD_SEARCH_PATH`.
+  - The directory name is the command group; the script name is the command.
+
+### Best Practices
+
+- Always use the `mycmd` launcher to execute commands to benefit from environment setup and metadata loading.
+- Use command groups for logical organization and shared code reuse.
+- Keep command scripts minimal and focused; put common functions in the group library file.
+- Register meaningful short descriptions and version info for better user experience.
+
+### Performance Considerations
+
+Given that MyCmd sources libraries and sets up environment for each command execution, commands should execute quickly for typical use. If performance issues arise, check for slow setup in group libraries.
+
+---
+
+## 5. Next Steps & Related Content
+
+- **Your Next Guide:** [Writing Custom Commands and Command Groups](../command-authoring-and-best-practices/writing-custom-commands) — dive deeper into advanced command scripting techniques.
+- **Explore Help Output:** Run `mycmd --help` and `mycmd myfirstgroup --help` to familiarize yourself with usage.
+- **Discover Commands:** Use `mycmd project list-tasks` to see task management using the project command group.
+- **Learn About Command Groups:** Read [Command and Command Group Hierarchy](../../mycmd-concepts/core-architecture/command-hierarchy) to understand deeper architectural concepts.
+
+---
