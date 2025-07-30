@@ -3,4 +3,167 @@ title: "Setting Up Your Environment"
 description: "Guides users to correctly modify their PATH environment variable, ensuring the mycmd binary is available in their shell. Clarifies the installation path and offers shell-specific setup tips for persistent access. Prepares users for immediate use after installation."
 ---
 
-*This page will automatically be generated from the codebase*
+# Setting Up Your Environment
+
+This guide walks you through properly configuring your shell environment so that the `mycmd` command-line tool is accessible immediately after installation. Correctly setting your `PATH` environment variable ensures that your system can locate the `mycmd` executable, allowing you to run commands seamlessly.
+
+---
+
+## 1. Understanding the Installation Location
+
+When you install MyCmd, the main executable binary `mycmd` is placed in a `bin` directory inside the MyCmd installation path. There are two core directories involved:
+
+- **System Base Directory (`MYCMD_SYSTEM_BASE_DIR`)**: This is where the main MyCmd system files and binary reside. Typically, this will be the folder containing the `bin/` directory.
+- **User Base Directory (`MYCMD_USER_BASE_DIR`)**: This directory often holds user-specific command groups and custom extensions.
+
+The important takeaway is that the `bin` directory inside the System Base (`${MYCMD_SYSTEM_BASE_DIR}/bin`) must be included in your shell's `PATH`.
+
+---
+
+## 2. Adding MyCmd to Your PATH
+
+### Step-by-Step for Bash or Zsh Shells
+
+1. **Locate your shell configuration file**:
+   - For **Bash**, this is usually `~/.bashrc` or `~/.bash_profile`.
+   - For **Zsh**, this is `~/.zshrc`.
+
+2. **Open the file in your preferred text editor**:
+
+```bash
+nano ~/.bashrc
+# or
+nano ~/.zshrc
+```
+
+3. **Add the following line to set the path**:
+
+```bash
+export PATH="${MYCMD_SYSTEM_BASE_DIR}/bin:$PATH"
+```
+
+> Replace `${MYCMD_SYSTEM_BASE_DIR}` with the actual absolute path where MyCmd is installed, for example `/usr/local/mycmd`.
+
+4. **Save and close the file**.
+
+5. **Apply the changes by sourcing your shell config or restarting the terminal:**
+
+```bash
+source ~/.bashrc
+# or
+source ~/.zshrc
+```
+
+6. **Verify the path includes MyCmd:**
+
+```bash
+echo $PATH
+```
+
+The output should display your MyCmd bin directory near the front.
+
+### Example
+
+If you installed MyCmd to `/usr/local/mycmd`, add:
+
+```bash
+export PATH="/usr/local/mycmd/bin:$PATH"
+```
+to your shell config file.
+
+---
+
+## 3. Tips for Persistent and Correct Setup
+
+- **Use Absolute Paths**: Always use the absolute path to your MyCmd installation in your `PATH` variable to avoid resolution issues.
+- **Ordering Matters**: Placing MyCmd's `bin` directory at the front of your `PATH` ensures its commands override any similarly named ones elsewhere.
+- **Avoid Duplicate Entries**: Check your `PATH` does not contain duplicate MyCmd paths to reduce confusion.
+- **Use Environment Variables**: If you prefer, define and export the `MYCMD_SYSTEM_BASE_DIR` variable in your shell config, then extend `PATH` using it:
+
+```bash
+export MYCMD_SYSTEM_BASE_DIR="/usr/local/mycmd"
+export PATH="$MYCMD_SYSTEM_BASE_DIR/bin:$PATH"
+```
+
+- **Validate Directory Existence**: Confirm the `bin` directory exists inside your MyCmd system base directory before updating your `PATH`.
+
+---
+
+## 4. Special Considerations
+
+### macOS Users
+If you installed MyCmd with Homebrew or in a custom location, ensure you use the Homebrew installation path for `MYCMD_SYSTEM_BASE_DIR`. For example, `/usr/local/opt/mycmd` or `/opt/homebrew/opt/mycmd`.
+
+### Using Other Shells
+For shells like Fish or Csh, the syntax to modify the `PATH` differs. Refer to your shell's documentation and ensure you add MyCmd's `bin` directory accordingly.
+
+---
+
+## 5. Verifying Your Environment Setup
+
+Once configured:
+
+1. Open a new terminal session or source your shell configuration.
+2. Run:
+
+```bash
+which mycmd
+```
+
+This command should return the full path to the `mycmd` binary inside your installation's `bin` folder.
+
+3. Test executing `mycmd`:
+
+```bash
+mycmd --version
+```
+
+You should see the version number printed, confirming MyCmd is properly accessible.
+
+---
+
+## 6. Troubleshooting
+
+- **`mycmd` command not found:**
+  - Double-check the absolute path in your `PATH` variable.
+  - Confirm the `bin/mycmd` file exists and is executable.
+  - Ensure you restarted or sourced your shell configuration after editing.
+
+- **Multiple versions or conflicts:**
+  - Use `type -a mycmd` to list all locations of `mycmd` in your `PATH`.
+  - Remove conflicting entries or reorder your `PATH` to prioritize the correct one.
+
+- **Permission denied:**
+  - Verify the `mycmd` binary has executable permissions:
+
+```bash
+ls -l ${MYCMD_SYSTEM_BASE_DIR}/bin/mycmd
+chmod +x ${MYCMD_SYSTEM_BASE_DIR}/bin/mycmd
+```
+
+- **Environment variables not set:**
+  - Make sure environment variables like `MYCMD_SYSTEM_BASE_DIR` (if used) are exported correctly.
+
+---
+
+## 7. Next Steps
+
+With your environment properly set up:
+
+- Begin by running your first commands with MyCmd (see [Running Your First Command](../first-run-and-validation/first-command)).
+- Explore configuring MyCmd for your personal workflow ([Configuring MyCmd for Your Workflow](../configuration-troubleshooting/configuring-mycmd)).
+- Refer to troubleshooting tips if you encounter any issues ([Troubleshooting Installation and First Run](../configuration-troubleshooting/troubleshooting-setup)).
+
+---
+
+## References
+
+- [Installing MyCmd](../../guides/getting-started-with-mycmd/installing-mycmd)
+- [MyCmd Search Path Concepts](../../mycmd-concepts/core-architecture/mycmd-search-path)
+- [System Requirements](../../getting-started/setup-prerequisites-installation/system-requirements)
+
+---
+
+<Note>
+Setting your `PATH` environment variable correctly is a critical step that ensures you can run MyCmd without having to specify full paths or encounter command-not-found errors. This setup step empowers you to immediately start leveraging MyCmd's powerful CLI features.
+</Note>
