@@ -1,0 +1,130 @@
+{
+  "background": {
+    "decoration": "gradient"
+  },
+  "colors": {
+    "dark": "#1E3A8A",
+    "light": "#60A5FA",
+    "primary": "#60A5FA"
+  },
+  "favicon": "/favicon.svg",
+  "fonts": {
+    "family": "Montserrat",
+    "format": "woff2",
+    "source": "https://fonts.gstatic.com/s/googlesansflex/v5/t5sJIQcYNIWbFgDgAAzZ34auoVyXkJCOvp3SFWJbN5hF8Ju1x6sKCyp0l9sI40swNJwGpVd4AZzz0v6lJ4qFXNZhGjLvDSkV4USKMo6qQzwliVdHAy9jxTDHg_ugnAakpwGc-cxgUqDCIUI.woff2"
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "logo": {
+    "dark": "./logo/logo.svg",
+    "light": "./logo/logo.svg"
+  },
+  "name": "MyCmd",
+  "navigation": {
+    "tabs": [
+      {
+        "groups": [
+          {
+            "group": "What is MyCmd?",
+            "pages": [
+              "overview/product-introduction-value/overview-intro",
+              "overview/product-introduction-value/target-audience-use-cases",
+              "overview/product-introduction-value/feature-overview"
+            ]
+          },
+          {
+            "group": "Architecture \u0026 Core Concepts",
+            "pages": [
+              "overview/architecture-core-concepts/architecture-system-diagram",
+              "overview/architecture-core-concepts/core-concepts-terminology",
+              "overview/architecture-core-concepts/workflow-overview"
+            ]
+          }
+        ],
+        "tab": "Overview"
+      },
+      {
+        "groups": [
+          {
+            "group": "Setup and Installation",
+            "pages": [
+              "getting-started/setup-prerequisites-installation/system-requirements",
+              "getting-started/setup-prerequisites-installation/installing-mycmd",
+              "getting-started/setup-prerequisites-installation/path-setup-post-install"
+            ]
+          },
+          {
+            "group": "First Run and Validation",
+            "pages": [
+              "getting-started/first-run-and-validation/first-command",
+              "getting-started/first-run-and-validation/quick-validation"
+            ]
+          },
+          {
+            "group": "Configuration and Troubleshooting",
+            "pages": [
+              "getting-started/configuration-troubleshooting/configuring-mycmd",
+              "getting-started/configuration-troubleshooting/troubleshooting-setup"
+            ]
+          }
+        ],
+        "tab": "Getting Started"
+      },
+      {
+        "groups": [
+          {
+            "group": "Getting Started with MyCmd",
+            "pages": [
+              "guides/getting-started-with-mycmd/installing-mycmd",
+              "guides/getting-started-with-mycmd/first-command",
+              "guides/getting-started-with-mycmd/mycmd-workflow-tour"
+            ]
+          },
+          {
+            "group": "Authoring Commands and Best Practices",
+            "pages": [
+              "guides/command-authoring-and-best-practices/writing-custom-commands",
+              "guides/command-authoring-and-best-practices/common-patterns",
+              "guides/command-authoring-and-best-practices/debugging-commands"
+            ]
+          },
+          {
+            "group": "Advanced Workflows and Integration",
+            "pages": [
+              "guides/advanced-workflows-and-integration/automating-project-workflows",
+              "guides/advanced-workflows-and-integration/snapshot-testing",
+              "guides/advanced-workflows-and-integration/extending-with-shell-libraries"
+            ]
+          }
+        ],
+        "tab": "Guides"
+      },
+      {
+        "groups": [
+          {
+            "group": "Core Architecture",
+            "pages": [
+              "mycmd-concepts/core-architecture/command-hierarchy",
+              "mycmd-concepts/core-architecture/mycmd-search-path",
+              "mycmd-concepts/core-architecture/command-launcher-execution"
+            ]
+          },
+          {
+            "group": "Internals \u0026 Extensibility",
+            "pages": [
+              "mycmd-concepts/internals-and-extensibility/event-lifecycle",
+              "mycmd-concepts/internals-and-extensibility/platform-support",
+              "mycmd-concepts/internals-and-extensibility/vendoring-and-extending"
+            ]
+          }
+        ],
+        "tab": "Concepts"
+      }
+    ]
+  },
+  "styling": {
+    "codeblocks": "dark",
+    "eyebrows": "breadcrumbs"
+  }
+}
