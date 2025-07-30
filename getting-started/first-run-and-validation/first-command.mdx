@@ -3,4 +3,180 @@ title: "Running Your First Command"
 description: "Walks users through launching the `mycmd` CLI, exploring built-in help/version outputs, and running a sample command. Explains the command and command group structure and shows what to expect upon a successful run, laying the foundation for everyday usage."
 ---
 
-*This page will automatically be generated from the codebase*
+# Running Your First Command
+
+This guide takes you through launching the `mycmd` CLI tool, exploring its built-in help and version commands, and running a sample command. You'll gain a clear understanding of the hierarchical command and command group structure that MyCmd uses. By the end, you'll see what a successful command execution looks like and be ready to run your own commands daily.
+
+---
+
+## 1. Launching MyCmd: Basic Usage
+
+MyCmd is your launcher to execute Bash scripts organized in a directory hierarchy. Instead of running scripts directly, you invoke `mycmd` followed by the command groups and commands, with spaces separating hierarchy levels.
+
+### 1.1 Displaying Help and Version Information
+
+Start by exploring the built-in help and version outputs:
+
+```shell
+mycmd --help
+mycmd -h
+mycmd --version
+mycmd -v
+```
+
+These commands show general usage instructions and the installed MyCmd version.
+
+### 1.2 Getting Help for Command Groups and Commands
+
+To view help for specific command groups or commands, append the groups and commands to the `mycmd` command, ending with `--help` or `-h`. For example:
+
+```shell
+mycmd create --help
+mycmd logging --help
+mycmd test-command-group test-command --help
+```
+
+This hierarchical help respects the structure of command groups and commands in your setup.
+
+
+## 2. Understanding Command and Command Group Structure
+
+MyCmd organizes scripts into a two-level hierarchy:
+
+- **Command Groups**: Directories representing logical groupings of commands. Each has supporting shared code in a special library file named `<group_name>-lib`.
+
+- **Commands**: Executable scripts within command group directories.
+
+For example:
+
+```text
+mycmd/            # Top level (implicit command group)
+  create/          # Command Group
+    create-script  # Command script
+  logging/         # Command Group
+    log-setup      # Command script
+```
+
+You run a command by specifying its hierarchy separated by spaces, not slashes, like so:
+
+```shell
+mycmd create create-script
+```
+
+---
+
+## 3. Running a Sample Command: `test-command-group test-command`
+
+A practical way to verify your MyCmd environment is working is by running the included test command.
+
+### 3.1 Step-by-Step Execution
+
+1. Open a terminal.
+2. Run the following command:
+
+```shell
+mycmd test-command-group test-command
+```
+
+3. Observe the output:
+
+```text
+Running test-command.
+Finished execution of test-command.
+```
+
+This message confirms that MyCmd successfully located, loaded, and executed the test command script.
+
+### 3.2 What Happens Under the Hood?
+
+- MyCmd identifies the fully qualified command name `test-command-group/test-command`.
+- It loads associated command group libraries and support code.
+- It runs the main function of the command script.
+- Deferred startup and exit messages demonstrate lifecycle event hooks.
+
+
+## 4. Exploring Environment Variables Recognized by MyCmd
+
+MyCmd recognizes several environment variables that affect its behavior. Here are the key variables you might set or observe:
+
+| Variable               | Purpose                                                                            |
+|------------------------|------------------------------------------------------------------------------------|
+| `MYCMD_SYSTEM_BASE_DIR` | Directory for system-defined command groups.                                      |
+| `MYCMD_USER_BASE_DIR`   | Directory for user-defined command groups. Defaults to `$HOME/mycmd`. Must exist. |
+| `MYCMD_SEARCH_PATH`     | Colon-separated list of directories MyCmd searches for command groups and commands.|
+| `MYCMD_SHELL_TRACE`     | Enables Bash xtrace (`set -x`) for command execution.                             |
+| `MYCMD_SHELL_VERBOSE`   | Enables Bash verbose mode (`set -v`) during command execution.                     |
+| `MYCMD_DEBUG`           | Enables debug logging during command execution.                                   |
+| `MYCMD_TRACE`           | Enables trace logging during command execution.                                   |
+| `MYCMD_LOG_FILE`        | Specifies a file where MyCmd logs output instead of standard error.               |
+
+> These can be set to customize debug, trace, or logging behaviors as you develop or run commands.
+
+
+## 5. Command and Command Group Help Output Example
+
+To exemplify how MyCmd displays help for a command, use the test command group:
+
+```shell
+mycmd test-command-group test-command --help
+```
+
+Expected output:
+
+```text
+mycmd test-command-group test-command version 0.1
+
+Test Command for MyCmd
+
+Options:
+  test-command-group test-command -h
+```
+
+This concise help message includes the command version, short description, and usage hints.
+
+
+## 6. Best Practices for Running Your First Commands
+
+- Always start by running `mycmd --help` to familiarize yourself with available commands.
+- Use `--help` on specific command groups and commands to learn their options.
+- Verify your environment variables like `MYCMD_USER_BASE_DIR` if commands are not found.
+- Run the provided test command (`test-command-group test-command`) to confirm setup.
+- Gradually explore more complex commands as you grow comfortable.
+
+
+## 7. Troubleshooting Tips
+
+If you encounter issues when running your first command:
+
+- **Command not found errors:**
+  - Verify your `MYCMD_USER_BASE_DIR` and `MYCMD_SEARCH_PATH` are set and directories exist.
+  - Ensure that your PATH includes the directory containing `mycmd` executable.
+
+- **Permission denied:**
+  - Check that command scripts have execute permissions.
+
+- **Unexpected output or failures:**
+  - Enable debug or trace logging with `MYCMD_DEBUG=1` or `MYCMD_TRACE=1` to get detailed logs.
+
+- **No output:**
+  - Confirm that the command script exists in the expected location.
+
+
+## 8. What’s Next?
+
+- Learn how to create your own command groups and commands: [Writing Custom Commands and Command Groups](../guides/command-authoring-and-best-practices/writing-custom-commands).
+- Set up your environment PATH correctly: [Setting Up Your Environment](../../getting-started/setup-prerequisites-installation/path-setup-post-install).
+- Explore automating project workflows using MyCmd's project command group: [Automating Project Workflows with MyCmd](../../guides/advanced-workflows-and-integration/automating-project-workflows).
+
+
+---
+
+## Additional Resources
+
+- [MyCmd Home Repository](https://github.com/travisbhartwell/mycmd)
+- [MyCmd Overview and Core Concepts](../../overview/architecture-core-concepts/workflow-overview)
+- [MyCmd Command Structure and Authoring](../../mycmd-concepts/core-architecture/command-hierarchy)
+
+---
+
+By following this guide, you have launched `mycmd`, explored help and version commands, understood the underlying command hierarchy, and run a sample command successfully. You are now well-prepared to build and run your own Bash command scripts within the MyCmd framework.
