@@ -3,4 +3,165 @@ title: "Installing MyCmd"
 description: "Provides a stepwise walkthrough for installing MyCmd by cloning the repository and setting up the environment using the prepared installation script. Explains both git and HTTPS installation methods, points out file path conventions, and covers permissions and placement of files in the user’s environment."
 ---
 
-*This page will automatically be generated from the codebase*
+# Installing MyCmd
+
+This guide provides a clear, step-by-step walkthrough for installing **MyCmd** by cloning the repository and setting up your environment using the provided installation script. It covers both the Git-based and HTTPS-based installation methods, explains essential file path conventions, and highlights permissions and proper placement of files in your environment.
+
+---
+
+## 1. Prerequisites & System Requirements
+
+Before installing MyCmd, ensure your system meets the following requirements:
+
+- **Operating System:** Linux, macOS, or any Unix-like OS where Bash 5.x or later and GNU core utilities can be installed.
+- **Bash Version:** Bash 5.x is required.
+- **GNU Utilities:** Coreutils, findutils, sed, and grep (GNU versions specifically).
+
+### macOS Users
+
+Install required GNU utilities via [Homebrew](https://brew.sh) as follows:
+
+```shell
+brew install bash coreutils findutils gnu-sed grep
+```
+
+These dependencies are critical because MyCmd uses features and flags specific to GNU versions.
+
+---
+
+## 2. Installation Instructions
+
+MyCmd is currently pre-release software and is installed only via Git checkout. The recommended method uses a helper script that sets up a Git worktree with a snapshot of a known good version.
+
+### 2.1 Download the Setup Script
+
+First, download the setup script and make it executable:
+
+```shell
+curl -sSL -O "https://raw.githubusercontent.com/travisbhartwell/mycmd/main/support/setup-dev-environment.sh"
+chmod +x setup-dev-environment.sh
+```
+
+### 2.2 Choose Your Installation Method
+
+There are two ways to clone the repository:
+
+- **Git Protocol (SSH)** - requires an SSH GitHub account configured:
+
+```shell
+./setup-dev-environment.sh $HOME/Projects
+```
+
+- **HTTPS Protocol** - requires no Git account configuration but may ask for GitHub credentials for rate-limited requests:
+
+```shell
+MYCMD_USE_GIT_HTTPS=1 ./setup-dev-environment.sh $HOME/Projects
+```
+
+Replace `$HOME/Projects` with the parent directory where you want MyCmd installed.
+
+### 2.3 What Happens Next?
+
+- The script checks out MyCmd into a subdirectory named `mycmd` under the directory you specify (e.g., `$HOME/Projects/mycmd`).
+- A snapshot of the latest known good state is created as `mycmd/snapshot`.
+
+### 2.4 Important Directory Details
+
+- Your user-written commands and command groups must **not** go into the installation directory directly.
+- The directory `~/mycmd` is **reserved** for your personal command groups and commands.
+- The repository clones and snapshots must remain outside of `~/mycmd` (or your user base directory) to avoid conflicts.
+
+---
+
+## 3. Environment Setup & Path Configuration
+
+### 3.1 Update your PATH environment variable
+
+To use the `mycmd` command globally, add the snapshot’s binary directory to your shell's `PATH`.
+
+For example, if you installed MyCmd to `$HOME/Projects/mycmd`:
+
+```shell
+# Add to your ~/.bashrc, ~/.bash_profile, or ~/.zshrc depending on your shell
+export PATH="$HOME/Projects/mycmd/snapshot/bin:$PATH"
+```
+
+After adding this line, reload your shell configuration or restart your terminal:
+
+```shell
+source ~/.bashrc  # or the appropriate profile file
+```
+
+### 3.2 Verification
+
+Verify that `mycmd` is available:
+
+```shell
+which mycmd
+# Expected output:
+# /home/youruser/Projects/mycmd/snapshot/bin/mycmd
+
+mycmd --version
+# Should output MyCmd version and related info
+```
+
+### 3.3 Permissions
+
+Make sure the setup script (`setup-dev-environment.sh`) and the cloned directories have correct executable permissions. The setup script should already be executable; the cloned files generally do not require manual permission changes.
+
+---
+
+## 4. Common Installation Pitfalls and Tips
+
+- **Incorrect directory choice:** Do not use your home directory (`~`) as the parent directory in the setup script. Use a dedicated projects directory (e.g., `~/Projects`).
+- **Missing GNU dependencies:** Especially on macOS, missing GNU core-utils will cause failures. Always install them with Homebrew.
+- **PATH not updated:** If after installation `mycmd` is not found, ensure your shell `PATH` includes the snapshot bin directory.
+- **Git access issues:** If using the Git protocol method, confirm your SSH keys are configured properly with GitHub.
+- **Confusion around user directories:** Understand that `MYCMD_USER_BASE_DIR` defaults to `~/mycmd`. Do not install or clone MyCmd itself there.
+
+---
+
+## 5. Summary of Installation Flow
+
+<Steps>
+  <Step title="Download the setup script">
+    Use curl to download and chmod +x to make it executable.
+  </Step>
+  <Step title="Run the setup script">
+    Choose between Git protocol or HTTPS protocol based on your setup.
+  </Step>
+  <Step title="Configure your PATH">
+    Add the `snapshot/bin` directory to your shell’s PATH variable.
+  </Step>
+  <Step title="Verify installation">
+    Confirm `mycmd` is accessible and shows version info.
+  </Step>
+</Steps>
+
+---
+
+## 6. Related Documentation
+
+- For detailed **system requirements**, refer to [System Requirements](../getting-started/setup-prerequisites-installation/system-requirements).
+- To set up your environment fully after installation, see [Setting Up Your Environment](../getting-started/setup-prerequisites-installation/path-setup-post-install).
+- After installation, run your initial commands following the guide in [Running Your First Command](../getting-started/first-run-and-validation/first-command).
+- Troubleshoot installation issues using [Troubleshooting Installation and First Run](../getting-started/configuration-troubleshooting/troubleshooting-setup).
+
+---
+
+## 7. Frequently Asked Questions
+
+<AccordionGroup title="Common Installation FAQs">
+<Accordion title="Why does the setup script refuse my home directory?">
+The directory `~/mycmd` is reserved for user command groups. Using your home directory as the checkout parent would conflict with this and cause unexpected behavior.
+</Accordion>
+<Accordion title="Can I install MyCmd without Git?">
+Currently, MyCmd requires a Git checkout. The setup script supports using HTTPS to pull from GitHub if you don't have Git credentials configured, but Git is still required.
+</Accordion>
+<Accordion title="What if I don’t have SSH keys for Git?">
+Use the HTTPS installation method by setting the environment variable `MYCMD_USE_GIT_HTTPS=1` when running the setup script.
+</Accordion>
+<Accordion title="How do I update MyCmd after initial installation?">
+Use Git commands inside the `mycmd` directory under your chosen projects folder to pull updates. For example, run `git pull` inside `$HOME/Projects/mycmd`.
+</Accordion>
+</AccordionGroup>
