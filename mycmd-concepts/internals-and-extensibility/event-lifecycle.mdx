@@ -3,4 +3,191 @@ title: "Lifecycle Events and Deferred Actions"
 description: "Learn how startup and shutdown hooks, event dispatching, and stack traces enable controlled, reliable command execution, and how you can tap into these mechanisms for initialization or cleanup logic."
 ---
 
-*This page will automatically be generated from the codebase*
+# Lifecycle Events and Deferred Actions
+
+MyCmd provides a powerful and flexible event lifecycle management system, enabling commands and libraries to hook into key startup and shutdown moments. This mechanism allows for reliable initialization, cleanup, and error handling with minimal user friction, creating a consistent execution environment tailored to your needs.
+
+---
+
+## Understanding Lifecycle Events in MyCmd
+
+Lifecycle events are special signals broadcasted during distinct phases of command execution. They enable scripts and libraries to register functions to be deferred and executed later — either at startup (immediately after loading) or at exit (during shutdown). Harnessing these lifecycle events lets you run initialization logic, manage resources, or clean up gracefully, ensuring your commands behave predictably.
+
+Key lifecycle events include:
+
+- **Startup Deferred Events:** Actions deferred until command initialization finish, such as loading binaries or setting up environment variables.
+- **Exit Deferred Events:** Cleanup or error handling routines triggered as commands exit, including stack trace printing for diagnostics.
+
+## Why Lifecycle Events Matter
+
+Imagine launching a suite of Bash commands organized under MyCmd. You want to ensure that certain environment variables, binaries, or logging mechanisms are set up before running any command logic. Likewise, you need a guaranteed cleanup phase to shut down processes or report errors cleanly.
+
+Lifecycle events offer the structured hook points to inject such logic transparently:
+
+- Running deferred initialization only once after all libraries are loaded avoids side effects.
+- Error traps and exit handlers enforce consistent error reporting and resource finalization.
+- Users and developers can plug into these hooks without modifying core launcher code.
+
+This leads to more robust, maintainable command scripts enhancing workflow reliability.
+
+---
+
+## How to Register Startup and Exit Hooks
+
+### Deferring Actions at Startup
+
+To defer a command or function execution until the end of the startup phase, use:
+
+```bash
+mycmd.defer_at_startup <command_or_function>
+```
+
+This schedules the specified command or function to be called once all libraries and scripts are loaded but before starting command execution.
+
+Example:
+
+```bash
+mycmd.defer_at_startup mycmd.init_bin git
+```
+
+This will initialize the `git` binary availability after the script loading completes.
+
+Under the hood, MyCmd derives the calling script's full path and ties the deferred action to a unique event name based on that file's identity, ensuring no collisions or premature calls.
+
+### Deferring Actions at Exit
+
+To register cleanup or error handling functions that run when the command finishes (whether successful or not), use:
+
+```bash
+mycmd.defer_at_exit <command_or_function>
+```
+
+Example:
+
+```bash
+mycmd.defer_at_exit cleanup_temp_files
+```
+
+This ensures `cleanup_temp_files` is called on SIGINT, SIGTERM, script errors, or normal exit.
+
+This hook mechanism supports exit event firing even during signal interruptions, promoting graceful termination.
+
+---
+
+## Built-in Support for Error Handling and Stack Traces
+
+During execution, MyCmd traps errors and signals to maintain execution transparency:
+
+- **Error Stack Trace:** Upon errors (`ERR` trap), MyCmd prints a detailed stack trace showing the sequence of function calls, scripts, and line numbers leading to the failure. This improves debugging without requiring manual traceback code.
+
+- **Exit Deferred Execution:** On exit signals (`SIGINT`, `SIGTERM`, and normal exit), MyCmd runs all deferred exit handlers, facilitating resource cleanup and final logging.
+
+**Example error trace output:**
+
+```text
+
+The command some_failing_command triggered a stack trace.
+	 /path/to/script.sh: some_function() called in /path/to/parent_script.sh:42
+	 /path/to/parent_script.sh: main() called in /path/to/launcher.sh:15
+```
+
+This immediate, automated insight into the failure context accelerates resolution and improves script quality.
+
+---
+
+## Under the Hood: Event Management
+
+MyCmd integrates with the external vendor library `bashup.events` to provide event dispatching and listener registration capabilities.
+
+Key functions exposed:
+
+- **mycmd.event on <event_name> <callback>**: Register callbacks to lifecycle events.
+- **mycmd.event has <event_name>**: Checks if listeners exist for a specific event.
+- **mycmd.event fire <event_name>**: Dispatches the event, executing all registered callbacks.
+
+The lifecycle library builds on these to orchestrate startup and exit deferred actions by generating unique event names derived from calling scripts.
+
+---
+
+## Practical Workflow Example
+
+Here is a typical user scenario leveraging lifecycle events:
+
+1. **Library Initialization:** Your command group library sources internal dependencies.
+2. **Defer Binary Initialization:** You defer initialization of required binaries with `mycmd.defer_at_startup mycmd.init_bin <binary>`.
+3. **Deferred Startup Execution:** MyCmd later runs all deferred startup actions exactly once after all scripts are loaded.
+4. **Command Execution:** Your `mycmd.main` function runs user commands.
+5. **Defer Cleanup at Exit:** You register cleanup functions with `mycmd.defer_at_exit cleanup_resources`.
+6. **Signal or Error Handling:** On error or termination, MyCmd prints a stack trace and runs all deferred exit tasks.
+
+This pattern guarantees environment readiness, improves error diagnostics, and enforces clean shutdowns.
+
+---
+
+## Best Practices
+
+- **Use lifecycle events to avoid side effects during script loading.** Delay expensive or environment-affecting operations until startup completion.
+- **Register exit handlers for any temporary resources or locks to avoid stale states.**
+- **Avoid heavy logic in deferred hooks; keep them efficient and idempotent.**
+- **Leverage the built-in stack trace for rapid diagnostics; do not suppress error traps.**
+
+---
+
+## Troubleshooting Lifecycle Events
+
+| Issue | Cause | Solution |
+|---|---|---|
+| Deferred startup commands not running | Missing or incorrect usage of `mycmd.defer_at_startup` | Confirm commands are registered after sourcing and before user command execution |
+| Exit hooks not firing on Ctrl+C | External trap interference | Avoid overriding SIGINT/SIGTERM traps or chain them properly to call MyCmd handlers |
+| Stack trace missing on errors | Error trap disabled or MYCMD_DEBUG off | Ensure MYCMD_DEBUG or MYCMD_TRACE is enabled for detailed logs |
+
+---
+
+## Visualization of Lifecycle Event Flow
+
+```mermaid
+flowchart TD
+
+    subgraph Startup
+      direction TB
+      LibSource["Source Libraries"] --> DeferStart["mycmd.defer_at_startup calls"]
+      DeferStart --> StartupEvents["Startup Deferred Events Fired"]
+      StartupEvents --> CommandExec["mycmd.main command execution"]
+    end
+
+    subgraph CommandExecution
+     CommandExec --> ExitDefers["mycmd.defer_at_exit registrations"]
+    end
+
+    subgraph Exit
+      direction TB
+      Interrupts["SIGINT, SIGTERM, ERR, EXIT Traps"] --> RunExit["Run Deferred Exit Handlers"]
+      RunExit --> Done["Command Exit"]
+    end
+
+    CommandExec --> Interrupts
+
+    classDef lifecycle fill:#f9f,stroke:#333,stroke-width:2px;
+    StartupEvents,ExitDefers,RunExit class lifecycle
+```
+
+This diagram illustrates how deferred actions attach and execute at startup and exit.
+
+---
+
+## Summary
+
+MyCmd's lifecycle events and deferred action system provide a rigorous framework for initializing your environment and cleaning up reliably. Leveraging `mycmd.defer_at_startup` and `mycmd.defer_at_exit` hooks ensures your commands run in consistent contexts with robust error handling and diagnostics. Empower your automation workflows by embracing these event-driven extension points.
+
+---
+
+## Related Documentation
+
+- [Command and Command Group Hierarchy](/mycmd-concepts/core-architecture/command-hierarchy) — Understand how commands are structured in MyCmd.
+- [Launcher and Execution Flow](/mycmd-concepts/core-architecture/command-launcher-execution) — Learn the full command invocation process.
+- [Core Concepts & Terminology](/overview/architecture-core-concepts/core-concepts-terminology) — Definitions that underpin MyCmd.
+- [Debugging and Logging in Your Commands](/guides/command-authoring-and-best-practices/debugging-commands) — Practical advice on diagnostics and logs.
+
+---
+
+Explore lifecycle events today to transform your Bash command scripting into a maintainable, robust automation ecosystem.
