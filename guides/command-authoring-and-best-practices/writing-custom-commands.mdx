@@ -3,4 +3,266 @@ title: "Writing Custom Commands and Command Groups"
 description: "Detailed tutorial on authoring new commands and organizing them into reusable command groups. Covers naming conventions, directory structure, and key techniques for scalable script management."
 ---
 
-*This page will automatically be generated from the codebase*
+# Writing Custom Commands and Command Groups
+
+## Introduction
+This guide walks you through authoring new commands and organizing them into reusable command groups within MyCmd. By following these instructions, you will learn the best practices for structuring your scripts, naming conventions, metadata registration, and leveraging MyCmd's support libraries for scalable and maintainable automation scripting.
+
+---
+
+## 1. Workflow Overview
+
+### Task Description
+Create and structure your own Bash-based commands and command groups to extend MyCmd functionality. This involves organizing commands into hierarchical directory trees, adding descriptive metadata, and optionally sharing common functionality through command group libraries.
+
+### Prerequisites
+- MyCmd installed and configured on your system.
+- Basic knowledge of Bash scripting.
+- Familiarity with MyCmd command group and command concepts (see [Core Concepts & Terminology](../../overview/architecture-core-concepts/core-concepts-terminology)).
+
+### Expected Outcome
+You will have:
+- A new command group directory with supporting shared library.
+- One or more commands properly registered within this group.
+- Command scripts enriched with metadata (descriptions, help text, version).
+- Commands executable via the `mycmd` launcher with standardized help/version output.
+
+### Time Estimate
+About 30-45 minutes to create and test a simple command group with commands.
+
+### Difficulty Level
+Beginner to Intermediate depending on scripting experience.
+
+---
+
+## 2. Understanding Command Groups and Commands
+
+MyCmd organizes executable scripts into a hierarchy of **Command Groups** and **Commands**:
+
+- **Command Group**: A directory that holds related commands and possibly child command groups. Contains a shared shell library suffixed with `-lib` (e.g., `mygroup-lib`) allowing code reuse.
+
+- **Command**: An executable script file that performs a specific task, part of a command group hierarchy.
+
+Commands are launched by MyCmd through the hierarchy, using spaces to separate nested command group names instead of slashes.
+
+### Directory Layout Example
+```plaintext
+mycmd/
+└── sample-group/
+    ├── sample-group-lib    # Command group shared library
+    ├── first-command       # Executable command script
+    └── sub-group/
+        ├── sub-group-lib   # Nested command group library
+        └── another-command # Another command
+```
+
+---
+
+## 3. Step-by-Step Instructions
+
+### Step 1: Create a Command Group Directory
+1. Choose a name for your command group, e.g., `mytools`.
+2. Create a directory in your MyCmd path matching that name:
+```shell
+mkdir -p ~/mycmd/mytools
+```
+3. In that directory, create the shared library file named `mytools-lib`:
+```shell
+touch ~/mycmd/mytools/mytools-lib
+chmod +x ~/mycmd/mytools/mytools-lib
+```
+
+### Step 2: Add Metadata to the Command Group Library
+1. Open `mytools-lib` in your editor.
+2. Register the command group metadata using the provided aliases:
+
+```bash
+mycmd:command_group.register_short_description "MyTools Command Group"
+mycmd:command_group.register_help_text "This group contains utility commands for various tasks."
+mycmd:command_group.register_version "0.1"
+```
+
+3. Save the file.
+
+<Tip>
+Registering this metadata enables `mycmd mytools --help` and `mycmd mytools --version` to provide useful information.
+</Tip>
+
+### Step 3: Create Your Command Script
+1. Inside the command group directory, create your command as an executable file without extension, e.g., `list-files`:
+```shell
+touch ~/mycmd/mytools/list-files
+chmod +x ~/mycmd/mytools/list-files
+```
+2. Open `list-files` in your editor.
+3. Add shebang and metadata registration:
+
+```bash
+#!/usr/bin/env bash
+
+mycmd:command.register_short_description "List files with details"
+mycmd:command.register_help_text "Usage: mycmd mytools list-files [directory]
+Lists files in the specified directory or current directory if not provided."
+mycmd:command.register_version "0.1"
+
+# The main entry function
+function mycmd.main() {
+    local dir="${1:-.}"
+    ls -lh "$dir"
+}
+```
+
+4. Save the file.
+
+### Step 4: Run Your Command Using MyCmd
+
+```shell
+mycmd mytools list-files
+```
+
+You should see a detailed list of files in the current directory.
+
+### Step 5: Verify Help and Version Output
+
+Run to see help and version for your command group and your command:
+
+```shell
+mycmd mytools --help
+mycmd mytools list-files --help
+mycmd mytools list-files --version
+```
+
+This confirms that metadata is properly registered and displayed.
+
+---
+
+## 4. Tips and Best Practices
+
+- **Use meaningful names** and keep command group and command names short but descriptive.
+- Keep command group libraries (`-lib`) to shared functions or variables to avoid duplication.
+- Always register `short_description`, `help_text`, and `version` metadata for commands and groups.
+- Follow the naming convention for libraries: `<command-group>-lib`.
+- Ensure command scripts are executable and start with a proper shebang.
+- Put the main command logic inside `mycmd.main()` function as MyCmd expects this entrypoint.
+- Use environment variables like `_MYCMD_FULLY_QUALIFIED_NAME` and `_MYCMD_NAMESPACED_PARTS_STRING` if needed for dynamic behavior.
+
+<Warning>
+Do not assume commands are run directly – MyCmd launches them after setting the environment.
+Avoid placing logic outside `mycmd.main()` unless for initialization.
+</Warning>
+
+---
+
+## 5. Advanced Features
+
+### Loading Support Libraries
+To share common code across commands, place functions in the command group library (`mytools-lib`) and source them from commands:
+
+```bash
+source "$(dirname "${BASH_SOURCE[0]}")/mytools-lib"
+```
+
+This allows reuse of helper functions.
+
+### Nested Command Groups
+Create subdirectories with their own `-lib` files to form nested command groups. Invocations correspond to:
+
+```shell
+mycmd mytools sub-group my-command
+```
+
+where `mytools/sub-group/` is a child group.
+
+---
+
+## 6. Troubleshooting
+
+- **Command not found:** Verify the script is executable and located in a directory on the MyCmd search path (`MYCMD_USER_BASE_DIR` or configured `MYCMD_SEARCH_PATH`).
+- **No help or version info:** Check metadata registration calls in your command and command group libraries.
+- **Errors sourcing libraries:** Confirm correct relative paths and existence of `-lib` files.
+- **`mycmd.main` not found:** Ensure your command script defines the `mycmd.main()` function.
+
+<Tip>
+Run `mycmd --help` or `mycmd mygroup --help` to validate command group and command discovery.
+</Tip>
+
+---
+
+## 7. Examples
+
+### Example 1: Simple Command in New Command Group
+
+```bash
+# Directory structure
+~ /mycmd/example/
+~ /mycmd/example/example-lib
+~ /mycmd/example/hello
+
+# example-lib
+mycmd:command_group.register_short_description "Example commands"
+mycmd:command_group.register_version "0.1"
+
+# hello
+#!/usr/bin/env bash
+mycmd:command.register_short_description "Say hello"
+mycmd:command.register_help_text "Prints a friendly greeting"
+mycmd:command.register_version "0.1"
+
+function mycmd.main() {
+    echo "Hello from MyCmd!"
+}
+```
+
+Run:
+```shell
+mycmd example hello
+```
+
+Output:
+```
+Hello from MyCmd!
+```
+
+### Example 2: Nested Command Group
+
+```plaintext
+mycmd/tools/
+    tools-lib
+    cleanup
+    deploy/
+        deploy-lib
+        start
+        stop
+```
+
+Then invoke:
+```shell
+mycmd tools deploy start
+```
+
+This runs the `start` command inside the nested `deploy` command group.
+
+---
+
+## 8. Next Steps & Related Content
+
+- Start creating your first commands and explore command group structuring:
+  - [Your First Command: Creating and Running](../../guides/getting-started-with-mycmd/first-command)
+  - [MyCmd Workflow Explained](../../guides/getting-started-with-mycmd/mycmd-workflow-tour)
+- Dive deeper into Command Authoring Best Practices:
+  - [Common Patterns for Reuse and Collaboration](../../guides/command-authoring-and-best-practices/common-patterns)
+  - [Debugging and Logging in Your Commands](../../guides/command-authoring-and-best-practices/debugging-commands)
+- Understand system architecture for advanced usage:
+  - [System Architecture (with Diagram)](../../overview/architecture-core-concepts/architecture-system-diagram)
+  - [Core Concepts & Terminology](../../overview/architecture-core-concepts/core-concepts-terminology)
+
+---
+
+## Glossary
+- **Command Group:** A directory with a shared library that organizes commands.
+- **Command:** An executable script run through MyCmd.
+- **Metadata:** Registered descriptions, help text, and version info.
+
+---
+
+For more information, visit the [MyCmd repository](https://github.com/travisbhartwell/mycmd) and review the included libraries such as `mycmd-command-group-lib` and `mycmd-command-lib` for implementation details.
