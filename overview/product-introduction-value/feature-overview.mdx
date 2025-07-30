@@ -1,0 +1,177 @@
+---
+title: "Feature Summary"
+description: "Concise summary of MyCmd's capabilities: hierarchical command groups, streamlined command launching, shell library reuse, integrated help/version, platform awareness, and built-in support utilities. Enables users to understand the product scope at a glance."
+---
+
+# Feature Summary
+
+## Unlock the Power of Organized Bash Automation
+
+MyCmd delivers a robust framework that brings order, reusability, and efficiency to your Bash scripting workflows. By structuring scripts in hierarchical command groups and integrating essential utilities, MyCmd transforms chaotic script collections into well-maintained command libraries that are easy to navigate and extend.
+
+- Organize your scripts into hierarchical command groups for clear, maintainable structure.
+- Launch commands with a consistent, intuitive interface that scales across projects.
+- Reuse shell library code seamlessly among commands for DRY automation.
+- Access built-in help and version information integrated at every command level.
+- Benefit from platform-aware features that adapt across supported operating systems.
+- Utilize built-in support utilities for tasks like logging, configuration, and environment management.
+
+**Ideal for:** DevOps engineers, automation developers, power users managing complex Bash workflows.
+
+---
+
+## What Is This Feature Summary?
+
+This page provides a focused, concise overview of MyCmd's core capabilities. It helps you quickly understand what MyCmd enables you to do without diving into implementation details.
+
+MyCmd addresses the challenges of scripting scalability by introducing hierarchical command groups — directories representing logical command clusters — which allow you to organize scripts and share code efficiently. It also offers a unified command launcher to execute scripts consistently within these groups.
+
+Unlike ad hoc scripts, MyCmd's design encourages modularity, discoverability, and reuse, making your Bash automation workflows more maintainable and productive.
+
+---
+
+## Core Features & Capabilities
+
+### Hierarchical Command Groups
+Organize your commands in nested groups reflecting your project or workflow domains. Each command group carries its own code library, help text, and versioning information.
+
+**Benefits:**
+- Easily navigate large script collections.
+- Share common setup code via group support libraries.
+- Intuitively structure scripts by logical categories.
+
+### Streamlined Command Launching
+Use the `mycmd` launcher to execute any command or group of commands using space-separated hierarchical names.
+
+**Example:**
+```shell
+mycmd financial import chase-visa
+```
+This runs the `chase-visa` command inside the `import` command group, itself inside the `financial` group.
+
+**Benefits:**
+- Consistent CLI across all commands.
+- Automatic loading of relevant environment and libraries.
+
+### Shell Library Reuse
+Each command group can provide a support library (named with a `-lib` suffix) that commands inherit, enabling reuse of common functions and variables.
+
+**Benefits:**
+- Write reusable utilities once.
+- Avoid duplication in different commands.
+- Improve maintainability and collaboration.
+
+### Integrated Help and Version Information
+Every command and command group automatically supports displaying help text and version info.
+
+Invoke help at any level to see descriptions, usage details, and child commands/groups.
+
+```shell
+mycmd shell -h
+mycmd shell version
+```
+
+**Benefits:**
+- Always-available documentation for commands.
+- Rapid discovery of command capabilities.
+
+### Platform Awareness
+MyCmd detects and adapts to supported platforms (Linux, Mac OS), ensuring commands run smoothly and environment differences are managed.
+
+**Benefits:**
+- Cross-platform scripting with less manual tweaking.
+- Seamless portability across user environments.
+
+### Built-In Support Utilities
+MyCmd includes libraries for logging, configuration file handling, event lifecycle management, and output formatting.
+
+**Benefits:**
+- Simplify common automation challenges.
+- Enhance consistency and debugging capabilities.
+
+---
+
+## Why Should I Care?
+
+Switching to MyCmd brings measurable improvements to your Bash scripting workflow:
+
+- **Organizational Clarity:** No more scattered scripts; hierarchical command groups provide structure.
+- **Efficiency Gains:** Reuse code and avoid rewriting boilerplate.
+- **User Experience:** Streamlined command invocation and on-demand help reduce friction.
+- **Maintainability:** Shared libraries in command groups ease updates and bug fixes.
+- **Portability:** Platform-aware features minimize environment-specific issues.
+
+### Real World Use Cases
+
+- Automating Financial Data Imports with nested command groups per data source.
+- Managing Project Automation tasks under a project command group.
+- Building a CLI toolkit with multiple reusable Bash commands organized logically.
+
+### Before & After MyCmd
+
+| Without MyCmd                                    | With MyCmd                                       |
+|-------------------------------------------------|-------------------------------------------------|
+| Scripts scattered in various folders             | Well-defined, hierarchical command groups       |
+| Duplicate setup code across scripts               | Shared support libraries in command groups       |
+| Inconsistent command invocation                    | Uniform CLI syntax using `mycmd` launcher        |
+| Manual help text maintenance                       | Auto-managed, easily accessible help and version |
+
+---
+
+## Getting Started Preview
+
+Starting with MyCmd is straightforward:
+
+- Install MyCmd as per installation instructions.
+- Organize your scripts into directories representing command groups.
+- Create shell libraries (`-lib` files) inside command groups for reusable code.
+- Use `mycmd` to run commands by specifying hierarchical names.
+
+For detailed guidance, visit [Installing MyCmd](../getting-started/setup-prerequisites-installation/installing-mycmd) and [Your First Command: Creating and Running](../guides/getting-started-with-mycmd/first-command).
+
+<Tip>
+Start small by creating a simple command group with one command and experiment with running it via `mycmd`. Gradually add support libraries and nested command groups to scale your automation.
+</Tip>
+
+---
+
+## Visual Workflow: How MyCmd Executes a Command
+
+```mermaid
+flowchart TD
+
+    A[User runs `mycmd` with hierarchical command path] --> B[MyCmd Launcher parses command group and command]
+    B --> C[MyCmd searches registered Command Groups and Commands]
+    C --> D{Is command group found?}
+    D -- No --> E[Show error "Command group not found"]
+    D -- Yes --> F{Is command found?}
+    F -- No --> G[Show error "Command not found"]
+    F -- Yes --> H[Load support libraries of parent command groups]
+    H --> I[Load command script]
+    I --> J[Set environment variables and logging]
+    J --> K[Execute command's main function]
+    K --> L[Command runs with provided arguments]
+    L --> M[Return status and output to user]
+
+    classDef error fill:#f88,stroke:#900,color:#fff;font-weight:bold;
+    class E,G error;
+```
+
+---
+
+## Additional Resources
+
+- [Product Introduction](../overview/product-introduction-value/overview-intro)
+- [Target Audience & Use Cases](../overview/product-introduction-value/target-audience-use-cases)
+- [Installing MyCmd](../getting-started/setup-prerequisites-installation/installing-mycmd)
+- [Writing Custom Commands and Command Groups](../guides/command-authoring-and-best-practices/writing-custom-commands)
+
+Explore these to deepen your understanding and start building effective Bash automation with MyCmd.
+
+---
+
+## Summary
+
+This Feature Summary provides a clear snapshot of MyCmd’s essential capabilities: hierarchically organized command groups, a unified launcher for streamlined command execution, reusable shell libraries, consistent help/version integration, platform awareness, and comprehensive support utilities. It empowers users to grasp MyCmd’s scope quickly and start transforming their Bash scripting experience from fragmented scripts into a professional and maintainable automation framework.
+
+

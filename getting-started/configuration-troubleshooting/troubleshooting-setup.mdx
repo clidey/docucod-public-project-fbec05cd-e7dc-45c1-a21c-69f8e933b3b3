@@ -1,0 +1,260 @@
+---
+title: "Troubleshooting Installation and First Run"
+description: "Identifies typical setup issues (missing dependencies, PATH misconfiguration, permission problems), gives actionable diagnostics, and links to command outputs for quick problem assessment. Provides a starting point for unblocking common installation and startup challenges."
+---
+
+# Troubleshooting Installation and First Run
+
+This guide helps you quickly identify and resolve common setup and startup issues when installing and running MyCmd for the first time. It focuses on addressing missing dependencies, `PATH` misconfiguration, permission problems, and offers actionable diagnostics. Use this as your first stop if MyCmd does not start as expected.
+
+---
+
+## 1. Common Setup and Installation Issues
+
+### 1.1 Missing Dependencies
+
+MyCmd relies on GNU Bash (minimum version 4.0) and several essential GNU utilities such as `sed`, `find`, `realpath`, and others. If any of these are missing or inaccessible, MyCmd will fail to start or function correctly.
+
+#### How to Diagnose
+
+- Run the following diagnostic command to check if critical binaries are available:
+
+```bash
+for cmd in bash sed find realpath; do
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "Missing dependency: $cmd"
+    else
+        echo "$cmd is available at: $(command -v $cmd)"
+    fi
+done
+```
+
+- Verify your Bash version with:
+
+```bash
+bash --version
+```
+
+It must be version 4.0 or later.
+
+#### What to Do
+
+- Install missing tools via your package manager (e.g., `apt`, `yum`, `brew`).
+- On macOS, use Homebrew to install GNU utilities:
+
+```bash
+brew install gnu-sed coreutils findutils gnu-tar
+```
+
+- Ensure the installed tools are on your `PATH` and take precedence over system defaults.
+
+### 1.2 `PATH` Environment Misconfiguration
+
+If the directory containing the `mycmd` executable is not in your `PATH`, your shell won't be able to locate and run it.
+
+#### How to Diagnose
+
+- Check if `mycmd` is in your path:
+
+```bash
+command -v mycmd
+```
+
+If no path is returned, the `mycmd` binary is not discoverable.
+
+- Print your `PATH` environment variable:
+
+```bash
+echo "$PATH"
+```
+
+Look for the directory where `mycmd` was installed.
+
+#### What to Do
+
+1. Locate your MyCmd installation bin directory. This is typically something like `/usr/local/bin` or `$HOME/mycmd/bin`.
+
+2. Add this directory to your `PATH` in your shell profile:
+
+For Bash (`~/.bashrc` or `~/.bash_profile`):
+
+```bash
+export PATH="$PATH:/path/to/mycmd/bin"
+```
+
+3. Reload your shell configuration:
+
+```bash
+source ~/.bashrc
+```
+
+or restart the terminal.
+
+4. Verify again:
+
+```bash
+command -v mycmd
+```
+
+### 1.3 Permission Issues
+
+If the `mycmd` binary or its related files are not executable or readable by your user, you will encounter errors launching the application.
+
+#### How to Diagnose
+
+- Check permissions:
+
+```bash
+ls -l /path/to/mycmd/bin/mycmd
+```
+
+- Ensure the binary has execute permission (`-rwxr-xr-x` or similar).
+
+#### What to Do
+
+- Update permissions if necessary:
+
+```bash
+chmod +x /path/to/mycmd/bin/mycmd
+```
+
+- If using MyCmd configs or user directories, verify you have read/write access.
+
+
+## 2. Quick Diagnostic Commands
+
+Run these commands to quickly assess your installation health and runtime environment:
+
+```bash
+# Check MyCmd version and basic help output (should print usage info)
+mycmd --version
+mycmd --help
+
+# List available command groups
+mycmd
+
+# Run built-in test command to verify command execution
+mycmd test-command
+```
+
+If any of these commands return errors or unexpected output, note the exact messages for troubleshooting.
+
+## 3. Diagnosing Common Error Messages
+
+| Error Symptom                         | Likely Cause                   | Diagnostic Commands                       | Resolution                       |
+|-------------------------------------|-------------------------------|------------------------------------------|---------------------------------|
+| `command not found: mycmd`          | `mycmd` not in PATH            | `command -v mycmd`                       | Add `mycmd` bin to PATH         |
+| `permission denied` when running    | Executable permission missing | `ls -l $(command -v mycmd)`               | Set executable permission       |
+| `bash: mycmd: No such file or dir`  | Installation incomplete or wrong path | Check installation directory     | Reinstall or fix PATH           |
+| Missing utility, e.g., `realpath` not found | Dependency not installed | `command -v realpath`                     | Install missing dependency      |
+
+## 4. Actionable Tips and Best Practices
+
+- Always confirm environment variables `MYCMD_SYSTEM_BASE_DIR` and `MYCMD_USER_BASE_DIR` are set correctly and directories exist.
+- Avoid modifying core MyCmd binaries manually; use documented installation and upgrade paths.
+- Use verbose or debug modes for detailed logs:
+
+```bash
+export MYCMD_DEBUG=1
+mycmd <command>
+```
+
+- Consult MyCmd logs if available (`MYCMD_LOG_FILE` environment variable).
+
+## 5. Troubleshooting Workflow
+
+<Steps>
+<Step title="Verify Installation and PATH">
+Run `command -v mycmd` and confirm the output shows the correct path. If not, adjust your PATH.
+</Step>
+<Step title="Check Dependencies">
+Ensure required commands (`bash`, `sed`, `find`, `realpath`, etc.) exist by running `command -v` for each.
+</Step>
+<Step title="Confirm Permissions">
+Check that `mycmd` binary is executable with `ls -l` and fix with `chmod +x` if needed.
+</Step>
+<Step title="Run Basic Command">
+Try `mycmd --version` and `mycmd test-command` to validate basic functionality.
+</Step>
+<Step title="Enable Debug Mode">
+Setup `MYCMD_DEBUG=1` and rerun commands to capture verbose logs.
+</Step>
+<Step title="Consult Further Documentation or Support">
+If troubleshooting steps fail, refer to related documentation or seek community support.
+</Step>
+</Steps>
+
+## 6. Links to Related Documentation
+
+- [Installing MyCmd](../setup-prerequisites-installation/installing-mycmd) — Full installation walkthrough
+- [Setting Up Your Environment (PATH)](../setup-prerequisites-installation/path-setup-post-install) — Environment variable configuration
+- [Running Your First Command](../first-run-and-validation/first-command) — Guide for first operation
+- [Configuring MyCmd for Your Workflow](../configuration-troubleshooting/configuring-mycmd) — Customize your setup
+- [Quick Validation Checks](../first-run-and-validation/quick-validation) — Verify setup correctness
+
+## 7. Getting Help
+
+- Review the output of the diagnostic commands for clues.
+- Consult log files if enabled.
+- Check permissions and environment variables again.
+- Visit the MyCmd GitHub repository issues page:
+
+  https://github.com/travisbhartwell/mycmd/issues
+
+- Engage with the community or project maintainers for advanced troubleshooting.
+
+---
+
+<Tip>
+Always start troubleshooting by confirming your environment variables, PATH setup, and dependency availability. Early detection of these foundational issues saves time.
+</Tip>
+
+<Warning>
+Never run MyCmd commands as root or with elevated privileges unless explicitly required, as this may cause permission conflicts or security risks.
+</Warning>
+
+<Info>
+Enable `MYCMD_DEBUG=1` in your environment to get more detailed output that can help pinpoint issues.
+</Info>
+
+---
+
+MyCmd is designed to be robust, but environment setup issues are the primary cause of initial failures. This troubleshooting guidance equips you with actionable diagnostics to unblock your installation and begin automating with confidence.
+
+---
+
+<AccordionGroup title="Command Output References for Diagnostics">
+<Accordion title="Sample: `mycmd --version` Output">
+```
+mycmd version 0.1-GITHASH
+
+MyCmd: The Bash Command Framework
+
+MyCmd is a framework for creating and managing Bash commands and scripts.
+```
+</Accordion>
+<Accordion title="Sample: `mycmd` (No Args) to List Commands">
+```
+Usage:
+
+mycmd [-h | --help] [-v | --version]
+
+mycmd <command_group>... [-h | --help] [-v | --version] [arguments]
+
+mycmd <command_group>... <command> [-h | --help] [-v | --version] [arguments]
+
+Child command groups:
+create  MyCmd Command Group create
+logging MyCmd Logging Command Group Library
+project MyCmd Project Command Group Library
+shell   MyCmd Command Group shell
+```
+</Accordion>
+<Accordion title="Sample: `mycmd test-command` Output">
+```
+Test Command for MyCmd executed successfully.
+
+✅ Task 'test-command' succeeded.
+```
+</Accordion>
+</AccordionGroup>

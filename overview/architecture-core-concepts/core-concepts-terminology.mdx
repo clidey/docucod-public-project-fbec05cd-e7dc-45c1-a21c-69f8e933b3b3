@@ -1,0 +1,132 @@
+---
+title: "Core Concepts & Terminology"
+description: "Defines and contextualizes essential MyCmd terms: command, command group, launcher, search path, shell library, and hierarchy. Anchors user understanding for consistent navigation and communication."
+---
+
+# Core Concepts & Terminology
+
+Welcome to the foundational guide that defines the essential terms and concepts you need to master MyCmd. This page anchors your understanding of how MyCmd structures, organizes, and executes commands to provide a scalable, maintainable Bash scripting experience.
+
+---
+
+## What You Need to Know to Speak MyCmd
+
+To make the most of MyCmd and navigate its documentation, scripts, and workflows, you must be familiar with a common vocabulary. These terms define the building blocks of the MyCmd environment.
+
+### Command
+
+A **command** in MyCmd is a single executable script or program managed by the system. When you run MyCmd and specify a command name, MyCmd launches this script after setting up the appropriate environment and context.
+
+**Key points:**
+- Commands are scripts written typically in Bash.
+- They are the fundamental units of work.
+- A command is always executed *through* the `mycmd` launcher, never directly.
+
+### Command Group
+
+A **command group** is a hierarchical collection of related commands and possibly other command groups. It is represented on disk as a directory.
+
+**Why command groups matter:**
+- They bundle related commands to keep projects organized.
+- Command groups can share common code via shell libraries.
+- They create a namespace hierarchy that makes command invocation intuitive.
+
+For example, `mycmd/financial/import` could be a command group containing commands related to importing financial data.
+
+### Launcher
+
+The **launcher**, which for MyCmd is the top-level `mycmd` executable, acts as the entry point for running commands. Instead of calling scripts manually, users type `mycmd` followed by the hierarchical command path using spaces.
+
+**Example:**
+```
+mycmd financial import chase-visa
+```
+Here, `financial import chase-visa` is the hierarchy of command groups and the command itself.
+
+### Search Path
+
+MyCmd maintains a **search path** of directories it scans to discover command groups and commands. This flexible, ordered list lets you overlay or extend functionality without modifying existing scripts.
+
+**Important:**
+- Directories earlier in the search path take precedence.
+- The search path defines where MyCmd looks when you invoke commands.
+
+### Shell Library
+
+A **shell library** is a Bash script associated with a command group that contains reusable functions, variables, and setup code.
+
+**Advantages:**
+- Share common logic across commands within a group.
+- Reduce duplicate code.
+- Facilitate modular, maintainable script collections.
+
+By convention, the shell library file for a command group uses the group name suffixed with `-lib`.
+
+### Hierarchy
+
+The **hierarchy** refers to the nested structure of command groups and commands. MyCmd organizes commands into nested directories matching their command group path, and users invoke them via space-separated names instead of filesystem paths.
+
+This approach enables:
+- Logical organization of related commands.
+- Intuitive command invocation corresponding to function and project domains.
+
+---
+
+## How These Concepts Work Together
+
+MyCmd treats your script collections as a structured tree:
+
+- The **launcher** (`mycmd`) is the root interface users interact with.
+- You specify a path of **command groups**, each represented as a directory, leading to a **command** script.
+- For code reuse within this tree, **shell libraries** attached to command groups provide shared capabilities.
+- The **search path** configures where MyCmd looks for these command group directories.
+
+### User Flow Example
+
+1. You install your scripts in directories included in the MyCmd search path.
+2. You create command groups like `financial` and sub-groups like `import`.
+3. Inside the `import` command group directory, you add command scripts like `chase-visa`.
+4. When you run:
+
+```bash
+mycmd financial import chase-visa
+```
+
+MyCmd:
+- Locates the command script `chase-visa` inside `financial/import` directories.
+- Sources the shell libraries as needed from `financial-lib` and `import-lib`.
+- Prepares the environment and executes the command script.
+
+You get a well-organized and scalable CLI experience.
+
+---
+
+## Practical Tips for Success
+
+- **Consistent Naming**: Follow naming conventions to keep your command groups and shell libraries predictable.
+- **Use Command Groups for Code Sharing**: Put shared functions in a group shell library rather than duplicating them across commands.
+- **Leverage the Search Path Wisely**: Organize your scripts so the search path prioritizes your custom or development scripts.
+- **Remember Launcher Usage**: Never execute command scripts directly; use the `mycmd` launcher to ensure environment setup.
+
+---
+
+## Troubleshooting
+
+If you encounter command not found or unexpected behavior:
+
+- Verify that your command and command groups are placed correctly inside directories listed in the MyCmd search path.
+- Confirm your shell libraries are named properly and loaded.
+- Use the built-in help and version features (`mycmd command -h`, `mycmd command --version`) to validate metadata.
+- Ensure you are using space-separated hierarchical command names, not paths.
+
+---
+
+## Learn More & Next Steps
+
+This page provides a conceptual foundation in MyCmd's core terminology. For further understanding and practical application, explore:
+
+- [System Architecture (with Diagram)](/overview/architecture-core-concepts/architecture-system-diagram) to see how these components connect within MyCmd.
+- [Typical Workflow](/overview/architecture-core-concepts/workflow-overview) for step-by-step command execution flow.
+- [Product Introduction](/overview/product-introduction-value/overview-intro) for a broader look at MyCmd's value and design.
+
+By mastering these core terms and concepts, you build the foundation to effectively create, organize, and run powerful Bash automation with MyCmd.

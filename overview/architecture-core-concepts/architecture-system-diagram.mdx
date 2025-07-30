@@ -1,0 +1,167 @@
+---
+title: "System Architecture (with Diagram)"
+description: "Visualizes how MyCmd launches commands, organizes command groups, and manages library sourcing, including a mermaid diagram outlining major components: the command launcher, command group directories, support libraries, and script execution flow across OS platforms."
+---
+
+# System Architecture (with Diagram)
+
+## Visualizing MyCmd's Command Launch and Execution System
+
+Understanding how MyCmd organizes and executes your Bash commands is crucial to leveraging its full power. This documentation page provides a clear visualization and explanation of MyCmd's core architectural components, focusing on the command launcher, command group organization, support library sourcing, and cross-platform script execution.
+
+### Why This Matters to You
+
+MyCmd is designed to structure and execute Bash commands within hierarchical command groups. Knowing how commands are launched and libraries are sourced helps you write better scripts, debug effectively, and extend MyCmd confidently across different operating systems.
+
+---
+
+## High-Level Overview
+
+At its heart, MyCmd consists of several key components that collaborate seamlessly:
+
+- **Command Launcher**: The entry point that interprets user input to identify which command to run.
+- **Command Group Directories**: Organized folders representing command groups that logically nest commands for clarity and reusability.
+- **Support Libraries**: Shell libraries sourced automatically to provide shared functions and utilities.
+- **Script Execution Flow**: The runtime environment ensuring commands execute correctly on various OS platforms.
+
+This orchestration delivers a consistent, maintainable CLI experience, no matter where or how you run your scripts.
+
+---
+
+## System Architecture Diagram
+
+```mermaid
+flowchart TD
+  subgraph Launcher
+    Launcher["mycmd Command Launcher" ]
+  end
+
+  subgraph CommandGroups["Command Group Directories"]
+    CG1["mycmd/create" ]
+    CG2["mycmd/logging" ]
+    CG3["mycmd/project" ]
+    CG4["mycmd/shell" ]
+    CG5["mycmd/test-command-group" ]
+  end
+
+  subgraph SupportLibs["Support Libraries"]
+    Lib1["mycmd-command-lib" ]
+    Lib2["mycmd-event-base-lib" ]
+    Lib3["mycmd-event-lifecycle-lib" ]
+    Lib4["mycmd-registry-lib" ]
+    Lib5["mycmd-project-lib" ]
+  end
+
+  subgraph ExecutionFlow["Script Execution Flow Across Platforms"]
+    PlatformSupport["Platform Support Layer"]
+    RuntimeEnv["Shell Environment & Execution" ]
+  end
+
+  Launcher --> |"Discovers and selects"| CommandGroups
+  CommandGroups --> |"Source command scripts and libraries"| SupportLibs
+  SupportLibs --> |"Provide reusable functionality"| ExecutionFlow
+  Launcher --> |"Injects environment variables"| ExecutionFlow
+  ExecutionFlow --> |"Executes user commands"| RuntimeEnv
+
+  %% Styling
+  classDef launcher fill:#f9f,stroke:#333,stroke-width:2px;
+  class Launcher launcher;
+
+  classDef groups fill:#bbdefb,stroke:#1e88e5,stroke-width:2px;
+  class CommandGroups groups;
+
+  classDef libs fill:#c8e6c9,stroke:#388e3c,stroke-width:2px;
+  class SupportLibs libs;
+
+  classDef exec fill:#ffe082,stroke:#fbc02d,stroke-width:2px;
+  class ExecutionFlow exec;
+```
+
+---
+
+## Breaking Down the Components
+
+### 1. Command Launcher
+
+The `mycmd` launcher is your starting point. When you enter a command, it identifies the target command group and command script by parsing your input.
+
+- It references the **search path**, a prioritized set of directories to discover available command groups and commands.
+- It sets essential environment variables such as `MYCMD_SYSTEM_BASE_DIR` and `MYCMD_USER_BASE_DIR` to inform subsequent steps where to find resources.
+
+### 2. Command Group Directories
+
+Commands are organized hierarchically in directories known as command groups (e.g., `mycmd/project` or `mycmd/create`). These groups:
+
+- Reflect your automation's logical structure, improving clarity and maintenance.
+- Contain command scripts named identically to their function (e.g., `test-command`), making discovery intuitive.
+- Include support libraries (e.g., appending `-lib` to directory name) which provide reusable functions to commands within the group.
+
+### 3. Support Libraries
+
+Support libraries contain shared shell functions and utilities critical for consistent behavior across commands.
+
+- They are automatically sourced as commands execute, ensuring features such as event handling and registry management are available.
+- For example, `mycmd-command-lib` provides core command data structures and execution helpers.
+- Lifecycle and event-related support libraries manage deferred actions and error handling.
+
+### 4. Script Execution Flow Across OS Platforms
+
+MyCmd includes platform support layers that dynamically adapt execution to the operating system you are running, handling nuances between Linux, macOS, and other Unix-like systems.
+
+- Sets up shell tracing and verbosity modes to facilitate debugging and monitoring.
+- Executes commands within a managed shell environment ensuring portability and predictable results.
+
+---
+
+## Real-World Scenario: Running a Command
+
+Imagine you run the command:
+
+```bash
+mycmd project list-tasks
+```
+
+Here's what happens step-by-step:
+
+1. The **Command Launcher** parses that you want to run the `list-tasks` command inside the `project` command group.
+2. It locates the `mycmd/project` directory within your user or system base directories.
+3. The corresponding support library `mycmd-project-lib` is sourced to provide required functions.
+4. The actual command script `list-tasks` inside that directory is loaded.
+5. Platform support scripts configure the shell environment according to your OS.
+6. The command's main function executes, outputting the list of project tasks.
+
+This flow guarantees your command runs in the expected context with all dependencies satisfied.
+
+---
+
+## Tips for Success
+
+- **Organize your commands thoughtfully**: Use nested command groups to keep your scripts modular and reusable.
+- **Leverage support libraries**: Create shared functions in group support libs ending with `-lib` to avoid duplicated code.
+- **Understand environment variables**: Use configured variables like `MYCMD_USER_BASE_DIR` to locate configs and caches.
+- **Test across platforms**: Use the built-in platform abstraction for consistent behavior.
+
+---
+
+## Troubleshooting
+
+- **Command not found or not executing**: Verify the command group directory and command script exist in your search path.
+- **Support library loading errors**: Check that library files (e.g., `-lib` files) exist and are readable.
+- **Unexpected behavior on different OS**: Confirm the platform support layer is correctly detecting and adjusting settings.
+- **Debugging**: Enable environment variables like `MYCMD_SHELL_TRACE=1` to see detailed shell execution traces.
+
+---
+
+## Next Steps
+
+- Dive deeper into the [Core Concepts & Terminology](/overview/architecture-core-concepts/core-concepts-terminology) page to strengthen your foundational knowledge.
+- Explore the typical usage workflow on the [How MyCmd Works: Typical Workflow](/overview/architecture-core-concepts/workflow-overview) page.
+- Review the [Feature Summary](/overview/product-introduction-value/feature-overview) for a broader view of capabilities.
+
+---
+
+For detailed source and additional context, visit the [MyCmd GitHub repository](https://github.com/travisbhartwell/mycmd).
+
+---
+
+_This page is part of the Architecture & Core Concepts section of the MyCmd documentation._

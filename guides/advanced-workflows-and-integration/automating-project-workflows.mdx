@@ -1,0 +1,213 @@
+---
+title: "Automating Project Workflows with MyCmd"
+description: "Step-by-step instructions for leveraging MyCmd to automate tasks across development projects. Learn how to structure tasks, chain commands, and ensure repeatability for team environments."
+---
+
+# Automating Project Workflows with MyCmd
+
+Welcome to the guide for maximizing your project automation by leveraging the power of MyCmd. This document takes you through practical, step-by-step instructions on how to structure tasks, chain commands, and ensure that your automation workflows are repeatable and easily shareable across team environments.
+
+---
+
+## 1. Understanding the MyCmd Project Automation Page
+
+### What This Guide Covers
+This page focuses exclusively on automating project workflows within MyCmd by defining and executing tasks. You will learn how to register filesets (groups of files), create tasks linked to those filesets, and run one or more tasks with arguments, sequentially if necessary.
+
+### Before You Begin
+- Have a basic MyCmd project file (`myproject`) initialized in your working directory.
+- Ensure you have some commands or scripts organized under the MyCmd structure.
+- Familiarity with Bash scripting and the MyCmd command launcher will be helpful.
+
+### Expected Results
+- Efficiently register groups of files into filesets.
+- Organize tasks that operate on these filesets.
+- Chain task executions in a seamless, repeatable manner.
+- Understand quiet and verbose modes for task execution.
+
+### Time Commitment
+About 20–30 minutes to get comfortable with fileset definitions, task registrations, and running project task commands.
+
+### Skill Level
+Intermediate users with experience in CLI project automation and Bash scripting.
+
+---
+
+## 2. Automating Your Project: Step-by-Step
+
+You will discover how to define and run tasks on your project files using MyCmd's project command group. These tasks help standardize operations like formatting code, linting, or listing files.
+
+### Step 1: Registering Filesets
+Filesets are named collections of files relevant for particular tasks.
+
+1. In your `myproject` file, use `project.register_fileset` followed by the fileset name.
+2. Populate the fileset with files using either `project.find_files_for_fileset` which discovers files under specific directories or `project.add_files_to_fileset` to add individual files.
+
+Example:
+```bash
+project.register_fileset ALL_FILES
+project.find_files_for_fileset ALL_FILES "${BIN_DIR}" "${SYSTEM_BASE}" -type f
+project.add_files_to_fileset ALL_FILES "${MYPROJECT_PROJECT_FILE}"
+```
+
+Result:
+- `ALL_FILES` now includes all desired files for general tasks like formatting.
+
+### Step 2: Registering Tasks
+Tasks bind command functions to filesets, enabling operations like listing, formatting, or linting.
+
+Use `project.register_task_with_fileset` with three arguments:
+- The task name.
+- The function to execute.
+- The fileset to apply the task on.
+
+Example:
+```bash
+project.register_task_with_fileset format \
+    project:shell.format \
+    ALL_FILES
+```
+
+This registers a task `format` that runs shell script formatting (`shfmt`) over all files in `ALL_FILES`.
+
+### Step 3: Writing Task Functions (Optional Custom Logic)
+You may extend or customize task functions for your project.
+
+For shell script formatting and linting, MyCmd loads `project.load_task_library "shell"` which provides:
+- `project:shell.format` — uses `shfmt` for formatting.
+- `project:shell.lint` — uses `shellcheck` for linting.
+
+These tasks accept the fileset as an argument and apply the respective command line tools.
+
+### Step 4: Running Project Tasks
+Run your defined tasks using the `mycmd project run` command.
+
+Basic execution:
+```bash
+mycmd project run format
+```
+
+You can chain multiple tasks, separated by a semicolon (usually escaped to pass through shell):
+```bash
+mycmd project run format ; lint
+```
+
+To enable verbosity or quiet output, use flags:
+- `-V` or `--verbose` for detailed output
+- `-q` or `--quiet` for minimal output
+
+Example:
+```bash
+mycmd project run -V format
+```
+
+If you have set a default task in your `myproject` file using `project.register_default_task`, you can run without specifying a task.
+
+### Step 5: Listing Tasks
+To see all registered tasks, use:
+
+```bash
+mycmd project list-tasks
+```
+
+Use flags for more detailed output or to suppress descriptions:
+- `-q` to output task names only
+- `-V` for detailed task info
+
+---
+
+## 3. Practical Examples
+
+### Example: Define and Run a Task to Format and Lint All Project Shell Scripts
+In your `myproject`:
+```bash
+project.register_fileset SHELL_SCRIPTS
+project.find_files_for_fileset SHELL_SCRIPTS "${BIN_DIR}" -type f -name '*.sh'
+
+project.register_task_with_fileset format-shell \
+    project:shell.format \
+    SHELL_SCRIPTS
+
+project.register_task_with_fileset lint-shell \
+    project:shell.lint \
+    SHELL_SCRIPTS
+
+project.register_default_task format-shell
+```
+
+Then run:
+```bash
+mycmd project run format-shell ; lint-shell
+```
+
+This formats all shell scripts and then lints them.
+
+### Example: Adding a Custom Task
+Define a function in your `myproject` file:
+```bash
+function custom-cleanup() {
+    echo "Cleaning temp files in ${TMP_WORKING_DIR}"
+    rm -rf "${TMP_WORKING_DIR}"/*
+}
+
+project.register_task custom-cleanup
+```
+
+Run the cleanup task:
+```bash
+mycmd project run custom-cleanup
+```
+
+---
+
+## 4. Tips and Troubleshooting
+
+<AccordionGroup title="Common Issues and Solutions">
+<Accordion title="Tasks Not Found When Running">
+- Ensure your `myproject` file is in your current directory or parent directories.
+- Confirm tasks are registered properly using the `project.register_task` or `project.register_task_with_fileset` functions.
+- Run `mycmd project list-tasks` to verify.
+</Accordion>
+<Accordion title="Fileset is Empty or Missing Files">
+- Verify the paths you supply to `project.find_files_for_fileset` are correct.
+- Use paths relative to the `MYPROJECT_BASE_DIR` for consistency.
+- Check file matching patterns and types.
+</Accordion>
+<Accordion title="Verbose or Quiet Modes Not Working as Expected">
+- Flags must be specified before the `--` argument when running tasks.
+- Use `mycmd project run -V -- taskname` for verbose output.
+- Use `mycmd project run -q -- taskname` for quiet output.
+</Accordion>
+<Accordion title="Error: Unknown Task or Fileset">
+- Check task and fileset names spelling.
+- Make sure the fileset is registered before the task.
+- Confirm your function names passed to `project.register_task_with_fileset` exist.
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Remember to organize files and scripts clearly into filesets relevant for your tasks to maintain scalable project automation.
+</Tip>
+
+---
+
+## 5. What Next?
+
+- Explore [Writing Custom Commands and Command Groups](../command-authoring-and-best-practices/writing-custom-commands) to deepen your automation scripts.
+- Learn about [Debugging and Logging in Your Commands](../command-authoring-and-best-practices/debugging-commands) to trace task execution.
+- Review [Snapshot Testing for Command Consistency](../advanced-workflows-and-integration/snapshot-testing) to keep your automation reliable.
+- Use the default task features and chaining logic to build complex workflows.
+
+---
+
+### References & Related Documentation
+- [MyCmd Overview and Core Concepts](/overview/architecture-core-concepts/workflow-overview)
+- [MyCmd Project Command Group Library (source)](https://github.com/travisbhartwell/mycmd/blob/main/mycmd/project/project-lib)
+- [List Tasks Command](https://github.com/travisbhartwell/mycmd/blob/main/mycmd/project/list-tasks)
+- [Run Tasks Command](https://github.com/travisbhartwell/mycmd/blob/main/mycmd/project/run)
+
+---
+
+By following this guide, you will harness MyCmd's powerful task automation capabilities to streamline your development and operational workflows with clear, repeatable, and maintainable tasks.
+
+---
