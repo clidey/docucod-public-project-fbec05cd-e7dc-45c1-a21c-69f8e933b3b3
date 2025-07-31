@@ -101,9 +101,9 @@ MyCmd integrates with the external vendor library `bashup.events` to provide eve
 
 Key functions exposed:
 
-- **mycmd.event on <event_name> <callback>**: Register callbacks to lifecycle events.
-- **mycmd.event has <event_name>**: Checks if listeners exist for a specific event.
-- **mycmd.event fire <event_name>**: Dispatches the event, executing all registered callbacks.
+- **mycmd.event on \<event_name\> \<callback\>**: Register callbacks to lifecycle events.
+- **mycmd.event has \<event_name\>**: Checks if listeners exist for a specific event.
+- **mycmd.event fire \<event_name\>**: Dispatches the event, executing all registered callbacks.
 
 The lifecycle library builds on these to orchestrate startup and exit deferred actions by generating unique event names derived from calling scripts.
 
